@@ -1,0 +1,166 @@
+import { capitalCase } from "change-case";
+import { CodeIcon } from "lucide-react";
+import { Fragment, Suspense } from "react";
+import { CodexMessageOverview } from "@/app/(customer)/s/[slug]/codex-message-overview";
+import { CodexMessagePreview } from "@/app/(customer)/s/[slug]/codex-message-preview";
+import { CodexMessageStreamPreview } from "@/app/(customer)/s/[slug]/codex-message-stream-preview";
+import { SessionConversationInput } from "@/app/(customer)/s/[slug]/conversation-input";
+import {
+  PreviewAction,
+  PreviewIndexProvider,
+} from "@/app/(customer)/s/[slug]/preview-index-provider";
+import { getSessionData } from "@/app/(customer)/s/[slug]/query";
+import { Reloader } from "@/app/(customer)/s/[slug]/reloader";
+import { SessionProjectLinks } from "@/app/(customer)/s/[slug]/session-project-links";
+import { SessionTaskRevisionPreview } from "@/app/(customer)/s/[slug]/task-revision-preview";
+import {
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from "@/components/ai-elements/conversation";
+import {
+  Message,
+  MessageAction,
+  MessageActions,
+  MessageContent,
+  MessageResponse,
+} from "@/components/ai-elements/message";
+import { AutoCollapse } from "@/components/auto-collapse";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+
+export default async function SessionPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const slug = decodeURIComponent((await params).slug);
+
+  const session = await getSessionData(slug);
+
+  return (
+    <PreviewIndexProvider session={session}>
+      <div className="size-full overflow-hidden grid grid-cols-2 gap-4">
+        <Reloader session={session} />
+        <div className="size-full p-4 overflow-hidden flex flex-col gap-4">
+          <div className="flex items-center">
+            <h1>
+              {capitalCase(session.project?.name.replace(/-[^-]+$/, "") ?? "")}
+            </h1>
+            <Suspense>
+              <SessionProjectLinks session={session} />
+            </Suspense>
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <Conversation className="size-full">
+              <ConversationContent>
+                {session.task_revisions.map(
+                  (task_revision, task_revision_index) => (
+                    <Fragment key={task_revision.id}>
+                      <Message from="user">
+                        <MessageContent>
+                          <AutoCollapse collapseThresholdHeight={144}>
+                            <MessageResponse>
+                              {task_revision.user_prompt}
+                            </MessageResponse>
+                          </AutoCollapse>
+                        </MessageContent>
+                      </Message>
+                      <Message from="assistant" className="min-h-[50vh]">
+                        {task_revision.agent_result ? (
+                          <MessageContent>
+                            <MessageResponse>
+                              {task_revision.agent_result}
+                            </MessageResponse>
+                          </MessageContent>
+                        ) : (
+                          <CodexMessageOverview task_revision={task_revision} />
+                        )}
+                        <Actions
+                          task_revision={task_revision}
+                          index={task_revision_index}
+                        />
+                      </Message>
+                    </Fragment>
+                  ),
+                )}
+              </ConversationContent>
+              <ConversationScrollButton />
+            </Conversation>
+          </div>
+          <div className="w-full">
+            <SessionConversationInput
+              projectId={session.project_id}
+              taskId={session.task_id}
+              status={
+                session.task_revisions.length === 0
+                  ? "submitted"
+                  : session.task_revisions[session.task_revisions.length - 1]
+                        .status === "finished"
+                    ? "ready"
+                    : session.task_revisions[session.task_revisions.length - 1]
+                          .status === "interrupted"
+                      ? "error"
+                      : "streaming"
+              }
+            />
+          </div>
+        </div>
+        <div className="size-full p-4">
+          <SessionTaskRevisionPreview session={session} />
+        </div>
+      </div>
+    </PreviewIndexProvider>
+  );
+
+  function Actions({
+    task_revision,
+    index,
+  }: {
+    task_revision: (typeof session.task_revisions)[number];
+    index: number;
+  }) {
+    if (task_revision.status === "preparing") {
+      return null;
+    }
+
+    return (
+      <MessageActions>
+        <PreviewAction index={index} />
+        <Sheet>
+          <SheetTrigger asChild>
+            <MessageAction>
+              <CodeIcon />
+            </MessageAction>
+          </SheetTrigger>
+          <SheetContent className="sm:max-w-[480px] w-3/4">
+            <SheetHeader>
+              <SheetTitle>Details</SheetTitle>
+              <SheetDescription />
+            </SheetHeader>
+            <div className="flex-1 p-2 overflow-hidden">
+              {task_revision.agent_message ? (
+                <CodexMessagePreview
+                  message={task_revision.agent_message as never}
+                />
+              ) : (
+                <CodexMessageStreamPreview
+                  key={`${task_revision.id}-${task_revision.status}`}
+                  task_revision={task_revision}
+                />
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
+      </MessageActions>
+    );
+  }
+}
+
+export const revalidate = 5;

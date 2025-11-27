@@ -1,0 +1,42 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import type { UISessionData } from "@/app/(customer)/s/[slug]/query";
+
+export function Reloader({ session }: { session: UISessionData }) {
+  const router = useRouter();
+  useEffect(() => {
+    let shouldReload = false;
+    let interval = 1000;
+
+    if (session.project?.status !== "ready") {
+      shouldReload = true;
+      interval = 1000;
+    }
+
+    for (const revision of session.task_revisions) {
+      if (revision.status === "preparing") {
+        shouldReload = true;
+        interval = 5000;
+        break;
+      }
+      if (revision.status === "running") {
+        shouldReload = true;
+        interval = 5000;
+        break;
+      }
+    }
+
+    if (shouldReload) {
+      console.log(`reload after ${interval}ms...`);
+
+      const th = setTimeout(() => {
+        router.refresh();
+      }, interval);
+
+      return () => clearTimeout(th);
+    }
+  }, [session, router]);
+  return null;
+}
