@@ -12,8 +12,10 @@ import { generateSessionId } from "@/lib/tasks";
 
 type CreateTaskRevisionParams = Pick<
   Insertable<DB["task_revision"]>,
-  "prompt" | "sandbox_type" | "task_id" | "user_prompt"
->;
+  "prompt" | "task_id" | "user_prompt"
+> & {
+  sandbox_type: 'codex' | 'claude-code'
+};
 
 export async function createTaskRevision(params: CreateTaskRevisionParams) {
   const settings = await getSessionUserSettings();
