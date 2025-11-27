@@ -67,11 +67,6 @@ export default function Page() {
           flexShrink: 0,
         }}
       >
-        <img
-          className="block mx-auto w-72"
-          src="/TiDB-Logo-w-Tagline-Full-Pos-RGB.svg"
-          alt="Logo"
-        />
         <PromptInputProvider>
           <PromptInput onSubmit={handleSubmit}>
             <PromptInputBody>
