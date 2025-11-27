@@ -4,6 +4,7 @@ import type { Selectable } from "kysely";
 import { SessionContext } from "next-auth/react";
 import type * as React from "react";
 import { use } from "react";
+import Link from "next/link";
 import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -27,11 +28,13 @@ export function AppSidebar({
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className="items-start">
-        <img
-          className="h-18"
-          src="/TiDB-Logo-w-Tagline-Full-Pos-RGB.svg"
-          alt="Logo"
-        />
+        <Link href="/" aria-label="Home">
+          <img
+            className="h-18"
+            src="/TiDB-Logo-w-Tagline-Full-Pos-RGB.svg"
+            alt="Logo"
+          />
+        </Link>
       </SidebarHeader>
       <SidebarContent>
         <NavProjects sessions={sessions} />
