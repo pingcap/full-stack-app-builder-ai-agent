@@ -58,7 +58,7 @@ export default function Page() {
   );
 
   return (
-    <div className="size-full flex items-center justify-center">
+    <div className="min-h-screen w-full flex items-center justify-center">
       <div
         className="space-y-4"
         style={{
