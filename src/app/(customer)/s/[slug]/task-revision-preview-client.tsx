@@ -1,5 +1,6 @@
+import { useSize } from "@radix-ui/react-use-size";
 import { ExternalLinkIcon } from "lucide-react";
-import { use } from "react";
+import { use, useRef, useState } from "react";
 import { PreviewIndexContext } from "@/app/(customer)/s/[slug]/preview-index-provider";
 import {
   WebPreview,
@@ -25,11 +26,15 @@ export function TaskRevisionPreviewClient({
   checkpoints: { index: number; name: string }[];
   index: number;
 }) {
+  const [navigationContainerElement, setNavigationContainerElement] =
+    useState<HTMLDivElement | null>(null);
   const { setPreviewIndex } = use(PreviewIndexContext);
+
+  const size = useSize(navigationContainerElement);
 
   return (
     <WebPreview className="size-full" defaultUrl={url}>
-      <WebPreviewNavigation>
+      <WebPreviewNavigation ref={setNavigationContainerElement}>
         <Select
           value={String(index)}
           onValueChange={(index) => setPreviewIndex(parseInt(index))}
@@ -39,7 +44,10 @@ export function TaskRevisionPreviewClient({
               <SelectValue />
             </div>
           </SelectTrigger>
-          <SelectContent className="w-[var(--radix-popper-anchor-width)]">
+          <SelectContent
+            style={{ width: size?.width ? size.width - 16 : 180 }}
+            align="start"
+          >
             {checkpoints.map((checkpoint) => (
               <SelectItem
                 key={checkpoint.index}
