@@ -28,10 +28,7 @@ export function TaskRevisionPreviewClient({
   const { setPreviewIndex } = use(PreviewIndexContext);
 
   return (
-    <WebPreview
-      className="flex-1 rounded-none border-0 bg-transparent"
-      defaultUrl={url}
-    >
+    <WebPreview className="size-full" defaultUrl={url}>
       <WebPreviewNavigation>
         <Select
           value={String(index)}
