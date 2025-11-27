@@ -40,11 +40,15 @@ export function SessionTaskRevisionPreview({
     }
   }, [session.project_id, sandboxId]);
 
-  if (!url) {
-    return null;
-  }
-
   return (
-    <TaskRevisionPreviewClient key={previewIndex} url={url ?? "about:blank"} />
+    <TaskRevisionPreviewClient
+      key={`${previewIndex}-${url}`}
+      index={previewIndex}
+      checkpoints={session.task_revisions.map((rev, index) => ({
+        index,
+        name: rev.user_prompt,
+      }))}
+      url={url ?? "about:blank"}
+    />
   );
 }

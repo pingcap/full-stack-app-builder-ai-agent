@@ -146,9 +146,11 @@ function EditPart({ part }: { part: ClaudeBuiltinToolPart<"Edit"> }) {
         icon={<PencilIcon className="size-4 text-green-600" />}
         title={
           <div className="flex items-center gap-2">
-            <div className="text-nowrap min-w-0">
-              <span className="text-slate-700 font-semibold">Edit: </span>
-              {part.input?.file_path}
+            <div className="text-nowrap min-w-0 flex-1">
+              <div className="w-full h-full overflow-hidden text-ellipsis">
+                <span className="text-slate-700 font-semibold">Edit: </span>
+                {normalizeFileName(part.input?.file_path)}
+              </div>
             </div>
             <div className="text-nowrap min-w-0">
               <span className="text-green-600 font-mono font-semibold">
@@ -163,7 +165,7 @@ function EditPart({ part }: { part: ClaudeBuiltinToolPart<"Edit"> }) {
           </div>
         }
       />
-      <ToolContent>
+      <ToolContent className="p-2">
         <CodeBlock code={text} language="diff" />
       </ToolContent>
     </Tool>
@@ -221,9 +223,11 @@ function MultiEditPart({ part }: { part: ClaudeBuiltinToolPart<"MultiEdit"> }) {
         icon={<PencilIcon className="size-4 text-green-600" />}
         title={
           <div className="flex items-center gap-2">
-            <div className="text-nowrap min-w-0">
-              <span className="text-slate-700 font-semibold">Edit: </span>
-              {part.input?.file_path}
+            <div className="text-nowrap min-w-0 flex-1">
+              <div className="w-full h-full overflow-hidden text-ellipsis">
+                <span className="text-slate-700 font-semibold">Edit: </span>
+                {normalizeFileName(part.input?.file_path)}
+              </div>
             </div>
             <div className="text-nowrap min-w-0">
               <span className="text-green-600 font-mono font-semibold">
@@ -238,7 +242,7 @@ function MultiEditPart({ part }: { part: ClaudeBuiltinToolPart<"MultiEdit"> }) {
           </div>
         }
       />
-      <ToolContent>
+      <ToolContent className="p-2">
         <CodeBlock code={texts} language="diff" />
       </ToolContent>
     </Tool>
@@ -258,9 +262,11 @@ function WritePart({ part }: { part: ClaudeBuiltinToolPart<"Write"> }) {
         icon={<PencilIcon className="size-4 text-green-600" />}
         title={
           <div className="flex items-center gap-2">
-            <div className="text-nowrap min-w-0">
-              <span className="text-slate-700 font-semibold">Write </span>
-              {part.input?.file_path}
+            <div className="text-nowrap min-w-0 flex-1">
+              <div className="w-full h-full overflow-hidden text-ellipsis">
+                <span className="text-slate-700 font-semibold">Write </span>
+                {normalizeFileName(part.input?.file_path)}
+              </div>
             </div>
             <div className="text-green-600 font-mono font-semibold text-nowrap min-w-0">
               +{lines?.length}
@@ -268,7 +274,7 @@ function WritePart({ part }: { part: ClaudeBuiltinToolPart<"Write"> }) {
           </div>
         }
       />
-      <ToolContent>
+      <ToolContent className="p-2">
         <CodeBlock
           code={lines?.map((l) => `+ ${l}`).join("\n") ?? ""}
           language="diff"
@@ -285,7 +291,7 @@ function ReadPart({ part }: { part: ClaudeBuiltinToolPart<"Read"> }) {
     }
 
     const lines: string[] = [];
-    const regexp = /^\s+\d+→(.+)$/gm;
+    const regexp = /^\s+\d+�(.+)$/gm;
 
     let matched: RegExpMatchArray | null;
 
@@ -307,7 +313,7 @@ function ReadPart({ part }: { part: ClaudeBuiltinToolPart<"Read"> }) {
           <div className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
             <span>
               <span className="text-slate-700 font-semibold">Read</span> {lines}{" "}
-              lines from {part.input?.file_path}
+              lines from {normalizeFileName(part.input?.file_path)}
             </span>
           </div>
         }
@@ -452,3 +458,7 @@ export type ClaudeBuiltinToolPart<K extends keyof ClaudeBuiltInTools> = {
       };
     }
 );
+
+function normalizeFileName(src: string | undefined) {
+  return src?.replace(/^\/vercel\/sandbox\//, "");
+}

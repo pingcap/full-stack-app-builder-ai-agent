@@ -80,10 +80,10 @@ export default function Page() {
               Full-Stack App-Builder AI Agent
             </h1>
             <p className="text-muted-foreground text-sm">
-              Think of this as a lean, self-hostable cousin of Lovable.dev—describe
-              an app, watch Codex (gpt-5.1-codex) and Claude Code
-              (claude-sonnet-4.5) plus TiDB Cloud, Vercel, and GitHub build, test,
-              and deploy it automatically.
+              Think of this as a lean, self-hostable cousin of
+              Lovable.dev—describe an app, watch Codex (gpt-5.1-codex) and
+              Claude Code (claude-sonnet-4.5) plus TiDB Cloud, Vercel, and
+              GitHub build, test, and deploy it automatically.
             </p>
           </div>
           <div className="mx-auto w-full max-w-[480px] space-y-4">

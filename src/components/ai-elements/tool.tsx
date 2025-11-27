@@ -1,12 +1,5 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { cn } from "@/lib/utils";
 import type { ToolUIPart } from "ai";
 import {
   CheckCircleIcon,
@@ -18,6 +11,13 @@ import {
 } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 import { isValidElement } from "react";
+import { Badge } from "@/components/ui/badge";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { cn } from "@/lib/utils";
 import { CodeBlock } from "./code-block";
 
 export type ToolProps = ComponentProps<typeof Collapsible>;
@@ -81,11 +81,15 @@ export const ToolHeader = ({
     )}
     {...props}
   >
-    <div className="flex items-center gap-2">
-      {icon ?? <WrenchIcon className="size-4 text-muted-foreground" />}
-      <span className="font-medium text-sm">
-        {title ?? type.split("-").slice(1).join("-")}
+    <div className="flex items-center gap-2 w-full overflow-hidden">
+      <span className="shrink-0 w-max">
+        {icon ?? <WrenchIcon className="size-4 text-muted-foreground" />}
       </span>
+      <div className="flex-1 h-full overflow-hidden">
+        <span className="block font-medium text-sm size-full overflow-hidden text-ellipsis text-start">
+          {title ?? type.split("-").slice(1).join("-")}
+        </span>
+      </div>
       {getStatusBadge(state)}
     </div>
     <ChevronDownIcon className="size-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
