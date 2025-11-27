@@ -30,7 +30,7 @@ export function AppSidebar({
       <SidebarHeader className="items-start">
         <Link href="/" aria-label="Home">
           <img
-            className="h-18"
+            className="h-14"
             src="/TiDB-Logo-w-Tagline-Full-Pos-RGB.svg"
             alt="Logo"
           />
