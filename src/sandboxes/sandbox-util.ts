@@ -31,6 +31,7 @@ export type StartSandboxEvent =
     };
 
 export async function* startSandbox({
+  coding_agent_type,
   session,
   blobId,
   stdout,
@@ -38,7 +39,10 @@ export async function* startSandbox({
   gitBranch,
   gitRevision,
   ...options
-}: StartSandboxOptions & Credentials): AsyncGenerator<StartSandboxEvent> {
+}: StartSandboxOptions &
+  Credentials & {
+    coding_agent_type: "codex" | "claude";
+  }): AsyncGenerator<StartSandboxEvent> {
   const sandbox = await Sandbox.create({
     ...options,
     runtime: "node22",
@@ -49,6 +53,9 @@ export async function* startSandbox({
   try {
     const setupScript = `set -e
 
+${
+  coding_agent_type === "codex"
+    ? `
 CODEX_CONFIG_TOML='model_provider = "crs"
 model = "gpt-5.1-codex-max"
 model_reasoning_effort = "high"
@@ -76,9 +83,13 @@ echo Configuring Codex
 mkdir -p ~/.codex
 echo "$CODEX_CONFIG_TOML" > ~/.codex/config.toml
 echo "$CODEX_AUTH_JSON" > ~/.codex/auth.json
+`
+    : ""
+}
 
 echo Installing tools
-npm i -g @openai/codex code-tee vercel
+npm i -g ${coding_agent_type === "codex" ? "@openai/codex" : ""} ${coding_agent_type === "claude" ? "@openai/codex " : ""}code-tee vercel
+${coding_agent_type === "claude" ? "curl -fsSL https://claude.ai/install.sh | bash" : ""}
 
 PACKAGE_JSON="$(npm prefix)/package.json"
 
@@ -89,19 +100,20 @@ if [ -f "$PACKAGE_JSON" ]; then
 fi
 
 `;
+
     const resumeScript = `
 set -e
 cd ~
 
-echo Try to recovering codex history...
+echo Try to recovering ${coding_agent_type} history...
 
 ret=0
-wget "$BLOB_PUBLIC_URL/codex-sessions/$USER_ID/$SANDBOX_SESSION_ID/codex-data.zip" 2>/dev/null || ret=$?
+wget "$BLOB_PUBLIC_URL/${coding_agent_type}-sessions/$USER_ID/$SANDBOX_SESSION_ID/${coding_agent_type}-data.zip" 2>/dev/null || ret=$?
 
 if [ $ret -eq 0 ]; then
   echo Decompressing previous session files...
-  unzip -o codex-data.zip
-  rm codex-data.zip
+  unzip -o ${coding_agent_type}-data.zip
+  rm ${coding_agent_type}-data.zip
 fi
 
 

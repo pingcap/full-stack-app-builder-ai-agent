@@ -1,3 +1,6 @@
+import type { FileChangeItem, TodoListItem } from "@openai/codex-sdk";
+import type { ToolUIPart } from "ai";
+import { FileDiffIcon, FileMinusIcon, FilePlusIcon } from "lucide-react";
 import {
   Queue,
   QueueItem,
@@ -10,9 +13,6 @@ import {
   QueueSectionTrigger,
 } from "@/components/ai-elements/queue";
 import { Terminal } from "@/components/terminal";
-import { FileChangeItem, TodoListItem } from "@openai/codex-sdk";
-import type { ToolUIPart } from "ai";
-import { FileDiffIcon, FileMinusIcon, FilePlusIcon } from "lucide-react";
 
 // See https://github.com/openai/codex/blob/main/docs/exec.md
 //
@@ -93,7 +93,7 @@ export function CodexToolFileChangePart({
     <div className="mb-4 space-y-2">
       <div>File changes ({part.output})</div>
       {part.input?.map((change, index) => (
-        <div key={index}>
+        <div key={`${change?.path}-${index}`}>
           <div className="flex items-center gap-2 text-muted-foreground">
             {change?.kind === "add" && <FilePlusIcon className="size-4" />}
             {change?.kind === "delete" && <FileMinusIcon className="size-4" />}

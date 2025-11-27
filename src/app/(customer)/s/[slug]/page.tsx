@@ -1,10 +1,10 @@
 import { capitalCase } from "change-case";
 import { CodeIcon } from "lucide-react";
 import { Fragment, Suspense } from "react";
-import { CodexMessageOverview } from "@/app/(customer)/s/[slug]/codex-message-overview";
-import { CodexMessagePreview } from "@/app/(customer)/s/[slug]/codex-message-preview";
-import { CodexMessageStreamPreview } from "@/app/(customer)/s/[slug]/codex-message-stream-preview";
 import { SessionConversationInput } from "@/app/(customer)/s/[slug]/conversation-input";
+import { MessageOverview } from "@/app/(customer)/s/[slug]/message-overview";
+import { MessagePreview } from "@/app/(customer)/s/[slug]/message-preview";
+import { MessageStreamPreview } from "@/app/(customer)/s/[slug]/message-stream-preview";
 import {
   PreviewAction,
   PreviewIndexProvider,
@@ -75,12 +75,22 @@ export default async function SessionPage({
                       <Message from="assistant" className="min-h-[50vh]">
                         {task_revision.agent_result ? (
                           <MessageContent>
-                            <MessageResponse>
-                              {task_revision.agent_result}
-                            </MessageResponse>
+                            <AutoCollapse
+                              collapseThresholdHeight={288}
+                              className="from-white/100 to-white/0"
+                            >
+                              <MessageResponse>
+                                {task_revision.agent_result}
+                              </MessageResponse>
+                            </AutoCollapse>
                           </MessageContent>
                         ) : (
-                          <CodexMessageOverview task_revision={task_revision} />
+                          <MessageOverview
+                            task_revision={task_revision}
+                            coding_agent_type={
+                              session.project?.coding_agent_type ?? ""
+                            }
+                          />
                         )}
                         <Actions
                           task_revision={task_revision}
@@ -146,13 +156,15 @@ export default async function SessionPage({
             </SheetHeader>
             <div className="flex-1 p-2 overflow-hidden">
               {task_revision.agent_message ? (
-                <CodexMessagePreview
+                <MessagePreview
                   message={task_revision.agent_message as never}
+                  coding_agent_type={session.project?.coding_agent_type ?? ""}
                 />
               ) : (
-                <CodexMessageStreamPreview
+                <MessageStreamPreview
                   key={`${task_revision.id}-${task_revision.status}`}
                   task_revision={task_revision}
+                  coding_agent_type={session.project?.coding_agent_type ?? ""}
                 />
               )}
             </div>

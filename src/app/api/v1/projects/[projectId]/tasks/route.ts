@@ -1,4 +1,3 @@
-import { Vercel } from "@vercel/sdk";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createTaskRevision } from "@/actions/task-revisions";
@@ -74,7 +73,7 @@ export async function POST(
   if (first_prompt) {
     await createTaskRevision({
       task_id: task.id,
-      sandbox_type: "codex",
+      sandbox_type: project.coding_agent_type as never,
       prompt: first_prompt,
       user_prompt: first_prompt,
     });
