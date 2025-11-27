@@ -45,6 +45,7 @@ export async function createProject({
   github_repository_name,
   vercel_project_name,
   tidbcloud_cluster_name,
+  coding_agent_type,
 }: CreateProjectParams) {
   const normalizedName = kebabCase(name);
   github_repository_name = github_repository_name ?? normalizedName;
@@ -126,6 +127,7 @@ export async function createProject({
     vercel_team_id,
     vercel_project_id: "<UNSET>",
     vercel_team_token: "<UNSET>",
+    coding_agent_type,
   });
 
   after(async () => {

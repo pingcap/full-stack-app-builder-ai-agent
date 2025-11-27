@@ -1,3 +1,7 @@
+import { generateObject } from "ai";
+import { kebabCase } from "change-case";
+import { after, type NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createProject } from "@/actions/projects";
 import { createTaskRevision } from "@/actions/task-revisions";
 import { createTask } from "@/actions/tasks";
@@ -9,10 +13,6 @@ import {
   getGitHubClient,
   isGitHubSettingsValid,
 } from "@/lib/user-settings/github";
-import { generateObject } from "ai";
-import { kebabCase } from "change-case";
-import { after, type NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
 
 const requestSchema = z.object({
   first_prompt: z.string(),
@@ -101,6 +101,7 @@ Help user to generate meta fields, use kebab case.
     github_repository_name: `${github_repository_name}-${suffix}`,
     tidbcloud_cluster_name: `${tidbcloud_cluster_name}-${suffix}`,
     vercel_project_name: `${vercel_project_name}-${suffix}`,
+    coding_agent_type: "codex",
   });
 
   const octokit = getGitHubClient(settings.github_token);
@@ -128,7 +129,7 @@ Help user to generate meta fields, use kebab case.
     }
 
     await createTaskRevision({
-      sandbox_type: "codex",
+      sandbox_type: project.coding_agent_type as never,
       task_id: task.id,
       prompt,
       user_prompt: first_prompt,

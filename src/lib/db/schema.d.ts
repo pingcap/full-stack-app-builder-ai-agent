@@ -22,6 +22,7 @@ export type JsonPrimitive = boolean | number | string | null;
 export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
 export interface Project {
+  coding_agent_type: string;
   description: string;
   error_message: string | null;
   github_owner: string;

@@ -20,6 +20,7 @@ export async function POST(request: NextRequest) {
 
   const project = await createProject({
     ...data,
+    coding_agent_type: "codex",
   });
 
   return NextResponse.json(

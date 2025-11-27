@@ -1,7 +1,7 @@
 "use client";
 
-import { getAll } from "@/lib/kysely-utils";
 import { useRouter } from "next/navigation";
+import type * as React from "react";
 import {
   type FormEvent,
   useEffectEvent,
@@ -21,6 +21,7 @@ import {
   PromptInputTools,
 } from "@/components/ai-elements/prompt-input";
 import { handleFetchResponseError } from "@/lib/errors";
+import { getAll } from "@/lib/kysely-utils";
 
 export default function Page() {
   const router = useRouter();
@@ -59,12 +60,18 @@ export default function Page() {
   return (
     <div className="size-full flex items-center justify-center">
       <div
+        className="space-y-4"
         style={{
           width: "480px",
           height: "max-content",
           flexShrink: 0,
         }}
       >
+        <img
+          className="block mx-auto w-72"
+          src="/TiDB-Logo-w-Tagline-Full-Pos-RGB.svg"
+          alt="Logo"
+        />
         <PromptInputProvider>
           <PromptInput onSubmit={handleSubmit}>
             <PromptInputBody>
