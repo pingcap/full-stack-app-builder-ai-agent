@@ -1,5 +1,5 @@
 import { capitalCase } from "change-case";
-import { CodeIcon } from "lucide-react";
+import { CodeIcon, ListTodo } from "lucide-react";
 import { Fragment, Suspense } from "react";
 import { SessionConversationInput } from "@/app/(customer)/s/[slug]/conversation-input";
 import { MessageOverview } from "@/app/(customer)/s/[slug]/message-overview";
@@ -49,8 +49,9 @@ export default async function SessionPage({
       <div className="size-full overflow-hidden grid grid-cols-2 gap-4">
         <Reloader session={session} />
         <div className="size-full p-4 overflow-hidden flex flex-col gap-4">
-          <div className="flex items-center">
-            <h1>
+          <div className="flex items-center gap-3">
+            <ListTodo className="h-5 w-5 text-muted-foreground" />
+            <h1 className="text-lg font-semibold leading-tight">
               {capitalCase(session.project?.name.replace(/-[^-]+$/, "") ?? "")}
             </h1>
             <Suspense>
