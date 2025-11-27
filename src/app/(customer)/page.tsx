@@ -58,33 +58,46 @@ export default function Page() {
   );
 
   return (
-    <div className="h-full w-full flex items-center justify-center">
-      <div
-        className="space-y-4"
-        style={{
-          width: "480px",
-          height: "max-content",
-          flexShrink: 0,
-        }}
-      >
-        <PromptInputProvider>
-          <PromptInput onSubmit={handleSubmit}>
-            <PromptInputBody>
-              <PromptInputTools />
-              <PromptInputTextarea ref={textareaRef} />
-            </PromptInputBody>
-            <PromptInputFooter>
-              <PromptInputSubmit
-                status={transitioning ? "streaming" : status}
-                disabled={
-                  transitioning ||
-                  status === "submitted" ||
-                  status === "streaming"
-                }
-              />
-            </PromptInputFooter>
-          </PromptInput>
-        </PromptInputProvider>
+    <div className="h-full w-full flex flex-col items-center px-4">
+      <div className="text-center space-y-2 w-full max-w-xl pt-12">
+        <h1 className="text-2xl font-semibold">
+          Full-Stack App-Builder AI Agent
+        </h1>
+        <p className="text-muted-foreground text-sm">
+          Think of this as a lean, self-hostable cousin of Lovable.dev—describe
+          an app, watch Codex (gpt-5.1-codex) and Claude Code
+          (claude-sonnet-4.5) plus TiDB Cloud, Vercel, and GitHub build, test,
+          and deploy it automatically.
+        </p>
+      </div>
+      <div className="flex-1 flex items-center justify-center w-full">
+        <div
+          className="space-y-4"
+          style={{
+            width: "480px",
+            height: "max-content",
+            flexShrink: 0,
+          }}
+        >
+          <PromptInputProvider>
+            <PromptInput onSubmit={handleSubmit}>
+              <PromptInputBody>
+                <PromptInputTools />
+                <PromptInputTextarea ref={textareaRef} />
+              </PromptInputBody>
+              <PromptInputFooter>
+                <PromptInputSubmit
+                  status={transitioning ? "streaming" : status}
+                  disabled={
+                    transitioning ||
+                    status === "submitted" ||
+                    status === "streaming"
+                  }
+                />
+              </PromptInputFooter>
+            </PromptInput>
+          </PromptInputProvider>
+        </div>
       </div>
     </div>
   );
