@@ -26,7 +26,7 @@ export function AppSidebar({
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
+      <SidebarHeader className="items-start">
         <img
           className="h-18"
           src="/TiDB-Logo-w-Tagline-Full-Pos-RGB.svg"
