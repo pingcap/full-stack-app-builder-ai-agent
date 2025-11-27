@@ -75,8 +75,9 @@ The workflow is:
    - will commit to the working branch when finished
 
 Help user to generate the prompt:
-- Make sure the coding agent will write and **execute the migration sql**
+- Make sure the coding agent will write and **execute the migration sql** if database features will be used
 - Do not use specific tech stack, agent needs to find it in the repository structure
+- \`npm run dev\` is running, the dev port is 3000. and do not run \`npm run build\` command which may break dev preview page
 
 Help user to generate meta fields, use kebab case.
 
