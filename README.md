@@ -1,3 +1,7 @@
+<p align="center">
+  <img alt="TiDB Cloud" src="./public/TiDB-Logo-w-Tagline-Full-Pos-RGB.svg" width="360" />
+</p>
+
 # Full-Stack App Builder AI Agent
 
 > Think of this as a lean, self-hostable cousin of [Lovable.dev](https://lovable.dev/)—describe an app, watch [Codex (gpt-5.1-codex)](https://openai.com/codex/) and [Claude Code (claude-sonnet-4.5)](https://www.claude.com/product/claude-code) plus [TiDB Cloud](https://www.pingcap.com/tidb/cloud/), Vercel, and [GitHub](https://github.com/) build, test, and deploy it automatically.
