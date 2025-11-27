@@ -356,9 +356,9 @@ export function ClaudeTodoList({
 }) {
   return (
     <QueueList>
-      {todos.map((todo) => (
+      {todos.map((todo, index) => (
         <QueueItem
-          key={todo.id}
+          key={todo.id ?? `todo-${index}`}
           className={cn(todo.status === "in_progress" && "bg-muted")}
         >
           <div className="flex items-center gap-2">

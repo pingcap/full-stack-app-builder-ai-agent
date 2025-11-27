@@ -43,6 +43,9 @@ export default async function SessionPage({
   const slug = decodeURIComponent((await params).slug);
 
   const session = await getSessionData(slug);
+  const projectDisplayName = capitalCase(
+    (session.project?.name ?? "").replace(/-[^-]+$/, ""),
+  );
 
   return (
     <PreviewIndexProvider session={session}>
@@ -52,7 +55,7 @@ export default async function SessionPage({
           <div className="flex items-center gap-3">
             <ListTodo className="h-5 w-5 text-muted-foreground" />
             <h1 className="text-lg font-semibold leading-tight">
-              {capitalCase(session.project?.name.replace(/-[^-]+$/, "") ?? "")}
+              {projectDisplayName}
             </h1>
             <Suspense>
               <SessionProjectLinks session={session} />
