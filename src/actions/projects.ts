@@ -268,18 +268,10 @@ async function prepareVercelProject(
 
   // TODO Install github app
 
-  // Create a Vercel team token
-  const { bearerToken: vercelTeamToken } =
-    await cli.authentication.createAuthToken({
-      teamId: vercelTeamId,
-      requestBody: {
-        name: `Auth Token for ${name}`,
-      },
-    });
   await update(
     db,
     "project",
-    { vercel_team_token: vercelTeamToken },
+    { vercel_team_token: settings.vercel_token },
     { id: projectId },
   );
 }
