@@ -10,16 +10,10 @@
 Imagine describing an app in chat and watching an agent ship it live. This repository hosts that control plane: operators log in with NextAuth, paste a prompt, and the agent provisions GitHub repos, TiDB Cloud branches, Vercel projects + sandboxes, runs Codex through `code-tee`, commits, deploys, and streams transcripts in `/s/:slug`. The stack blends Next.js App Router, shadcn/ui, Tailwind CSS v4, TanStack React Query/Form, Vercel AI SDK, and [Kysely](https://kysely.dev/) so every step—auth, orchestration, execution, visualization—lives in one place. TiDB Cloud sits at the center, acting as both the control-plane database and the per-app, branchable datastore that keeps schema changes isolated yet resumable.
 
 ## Architecture Overview
-```
-[Browser] ⇄ Next.js App Router (auth/session UI)
-     │
-     ├─ API / actions → GitHub (template repos, commits)
-     │                 → TiDB Cloud (clusters + branches)
-     │                 → Vercel (projects, [Blob](https://vercel.com/docs/vercel-blob), [Sandbox](https://vercel.com/docs/vercel-sandbox))
-     │                 → Codex (gpt-5.1-codex via code-tee) / Claude Code (claude-sonnet-4.5)
-     └─ Stream Proxy → `/v2/streams/:session` → UI viewers
-```
-> Diagram also available in Feishu Docs for richer formatting.
+
+<p align="center">
+  <img alt="Architecture Overview: Full-Stack App-Builder AI Agent" src="./public/architecture.png" width="720" />
+</p>
 
 ## Key Capabilities
 - **Resource orchestration** – `src/actions/projects.ts` provisions GitHub repos from the `634750802/nextjs-tidbcloud-serverless-kysely-template`, creates TiDB Cloud clusters/branches via the serverless API, and registers Vercel projects/team tokens per user.
