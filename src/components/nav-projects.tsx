@@ -2,9 +2,16 @@
 
 import { capitalCase } from "change-case";
 import type { Selectable } from "kysely";
-import { Folder, Forward, MoreHorizontal, Trash2 } from "lucide-react";
+import {
+  ChevronDown,
+  Folder,
+  Forward,
+  MoreHorizontal,
+  Trash2,
+} from "lucide-react";
 import Link from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";
+import { useMemo, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,11 +36,25 @@ export function NavProjects({
 }) {
   const { isMobile } = useSidebar();
   const [_, slug] = useSelectedLayoutSegments();
+  const [showAll, setShowAll] = useState(false);
+
+  const visibleSessions = useMemo(() => {
+    if (showAll || sessions.length <= 7) {
+      return sessions;
+    }
+    return sessions.slice(0, 7);
+  }, [sessions, showAll]);
+
+  const showToggle = sessions.length > 7;
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarMenu>
-        {sessions.map((item) => (
+      <SidebarMenu
+        className={
+          showToggle && showAll ? "max-h-72 overflow-y-auto pr-1" : undefined
+        }
+      >
+        {visibleSessions.map((item) => (
           <SidebarMenuItem key={item.id}>
             <SidebarMenuButton asChild isActive={slug === item.slug}>
               <Link href={`/s/${encodeURIComponent(item.slug)}`}>
@@ -70,6 +91,19 @@ export function NavProjects({
           </SidebarMenuItem>
         ))}
       </SidebarMenu>
+      {showToggle ? (
+        <button
+          type="button"
+          aria-expanded={showAll}
+          className="flex w-full items-center justify-center gap-1 rounded-md py-1 text-xs text-muted-foreground transition hover:text-foreground"
+          onClick={() => setShowAll((prev) => !prev)}
+        >
+          <ChevronDown
+            className={`h-4 w-4 transition-transform ${showAll ? "rotate-180" : ""}`}
+          />
+          <span>{showAll ? "Show less" : "Show all"}</span>
+        </button>
+      ) : null}
     </SidebarGroup>
   );
 }
