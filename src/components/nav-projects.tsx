@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   SidebarGroup,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuAction,
   SidebarMenuButton,
@@ -48,12 +49,9 @@ export function NavProjects({
   const showToggle = sessions.length > 7;
 
   return (
-    <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarMenu
-        className={
-          showToggle && showAll ? "max-h-72 overflow-y-auto pr-1" : undefined
-        }
-      >
+    <SidebarGroup>
+      <SidebarGroupLabel>Projects</SidebarGroupLabel>
+      <SidebarMenu>
         {visibleSessions.map((item) => (
           <SidebarMenuItem key={item.id}>
             <SidebarMenuButton asChild isActive={slug === item.slug}>
@@ -90,20 +88,20 @@ export function NavProjects({
             </DropdownMenu>
           </SidebarMenuItem>
         ))}
+        {showToggle ? (
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={() => setShowAll((prev) => !prev)}
+              className="text-muted-foreground"
+            >
+              <span>{showAll ? "Show less" : "Show all"}</span>
+              <ChevronDown
+                className={`ml-auto h-4 w-4 transition-transform ${showAll ? "rotate-180" : ""}`}
+              />
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        ) : null}
       </SidebarMenu>
-      {showToggle ? (
-        <button
-          type="button"
-          aria-expanded={showAll}
-          className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-md border border-border bg-background/80 px-2 py-1 text-xs font-medium text-muted-foreground transition hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          onClick={() => setShowAll((prev) => !prev)}
-        >
-          <span>{showAll ? "Show less" : "Show all"}</span>
-          <ChevronDown
-            className={`h-4 w-4 transition-transform ${showAll ? "rotate-180" : ""}`}
-          />
-        </button>
-      ) : null}
     </SidebarGroup>
   );
 }
