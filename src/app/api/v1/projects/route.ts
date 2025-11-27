@@ -1,7 +1,7 @@
-import { createProject } from "@/actions/projects";
-import { omit } from "@/lib/kysely-utils";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { createProject } from "@/actions/projects";
+import { omit } from "@/lib/kysely-utils";
 
 const requestSchema = z.object({
   name: z
@@ -12,6 +12,7 @@ const requestSchema = z.object({
     ),
   description: z.string().optional().default(""),
   vercel_team_id: z.string(),
+  coding_agent_type: z.enum(["codex", "claude"]),
 });
 
 export async function POST(request: NextRequest) {
@@ -20,7 +21,6 @@ export async function POST(request: NextRequest) {
 
   const project = await createProject({
     ...data,
-    coding_agent_type: "codex",
   });
 
   return NextResponse.json(

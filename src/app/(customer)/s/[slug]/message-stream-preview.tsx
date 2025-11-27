@@ -1,14 +1,16 @@
 "use client";
 
-import { CodexMessagePreview } from "@/app/(customer)/s/[slug]/codex-message-preview";
+import { MessagePreview } from "@/app/(customer)/s/[slug]/message-preview";
 import type { UISessionData } from "@/app/(customer)/s/[slug]/query";
 import type { CodexTools } from "@/components/codex-tool-part";
 import { useMessageSession } from "@/hooks/use-message-session";
 import { generateSessionId } from "@/lib/tasks";
 
-export function CodexMessageStreamPreview({
+export function MessageStreamPreview({
   task_revision,
+  coding_agent_type,
 }: {
+  coding_agent_type: string;
   task_revision: UISessionData["task_revisions"][number];
 }) {
   const sessionId = generateSessionId(
@@ -16,7 +18,9 @@ export function CodexMessageStreamPreview({
     task_revision.task_id,
     task_revision.id,
   );
-  const { message, error } = useMessageSession<CodexTools>(sessionId);
+  const { message } = useMessageSession(sessionId);
 
-  return <CodexMessagePreview message={message} />;
+  return (
+    <MessagePreview message={message} coding_agent_type={coding_agent_type} />
+  );
 }

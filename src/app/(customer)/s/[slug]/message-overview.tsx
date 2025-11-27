@@ -1,7 +1,14 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import type { UIDataTypes, UIMessagePart } from "ai";
+import type {
+  DynamicToolUIPart,
+  ToolUIPart,
+  UIDataTypes,
+  UIMessage,
+  UIMessagePart,
+  UITools,
+} from "ai";
 import type { Selectable } from "kysely";
 import { useEffect, useMemo } from "react";
 import { Streamdown } from "streamdown";
@@ -19,15 +26,22 @@ import {
   QueueSectionLabel,
   QueueSectionTrigger,
 } from "@/components/ai-elements/queue";
+import {
+  type ClaudeBuiltinToolPart,
+  ClaudeTodoList,
+  ClaudeToolPart,
+} from "@/components/claude-tool-part";
 import { CodexToolPart, type CodexTools } from "@/components/codex-tool-part";
 import { useMessageSession } from "@/hooks/use-message-session";
 import type { DB } from "@/lib/db/schema";
 import { handleFetchResponseError } from "@/lib/errors";
 import { generateSessionId } from "@/lib/tasks";
 
-export function CodexMessageOverview({
+export function MessageOverview({
   task_revision,
+  coding_agent_type,
 }: {
+  coding_agent_type: string;
   task_revision: UISessionData["task_revisions"][number];
 }) {
   const { data: branchData } = useQuery({
@@ -84,16 +98,17 @@ export function CodexMessageOverview({
   });
 
   const branchCreated = branchData?.status === "ready";
-  const vercelSandboxCreated =
+  const vercelSandboxCreated = !!(
     vercelSandboxData?.status === "ready" ||
-    vercelSandboxData?.status.startsWith("cmd:");
+    vercelSandboxData?.status.startsWith("cmd:")
+  );
 
   const sessionId = generateSessionId(
     task_revision.project_id,
     task_revision.task_id,
     task_revision.id,
   );
-  const { message, error, retry } = useMessageSession<CodexTools>(sessionId);
+  const { message, error, retry } = useMessageSession<any>(sessionId);
 
   useEffect(() => {
     if (!error || !branchCreated || !vercelSandboxCreated) return;
@@ -107,6 +122,42 @@ export function CodexMessageOverview({
     };
   }, [error, branchCreated, vercelSandboxCreated]);
 
+  return (
+    <>
+      <MessageContent>
+        <Loader />
+      </MessageContent>
+      {coding_agent_type === "codex" && (
+        <CodexOverviewContent
+          task_revision={task_revision}
+          branchCreated={branchCreated}
+          vercelSandboxCreated={vercelSandboxCreated}
+          message={message}
+        />
+      )}
+      {coding_agent_type === "claude" && (
+        <ClaudeOverviewContent
+          task_revision={task_revision}
+          branchCreated={branchCreated}
+          vercelSandboxCreated={vercelSandboxCreated}
+          message={message}
+        />
+      )}
+    </>
+  );
+}
+
+function CodexOverviewContent({
+  task_revision,
+  message,
+  branchCreated,
+  vercelSandboxCreated,
+}: {
+  task_revision: UISessionData["task_revisions"][number];
+  branchCreated: boolean;
+  vercelSandboxCreated: boolean;
+  message: UIMessage<unknown, UIDataTypes, CodexTools> | undefined;
+}) {
   const { todoListPart, lastReasoningPart, lastToolPart } = useMemo(() => {
     let todoListPart:
       | (UIMessagePart<UIDataTypes, CodexTools> & {
@@ -115,12 +166,11 @@ export function CodexMessageOverview({
         })
       | undefined;
     let lastReasoningPart:
-      | (UIMessagePart<any, any> & { type: "reasoning" })
+      | (UIMessagePart<UIDataTypes, CodexTools> & { type: "reasoning" })
       | undefined;
-    let lastToolPart: any | undefined;
+    let lastToolPart: ToolUIPart<CodexTools> | undefined;
     if (message) {
       for (const part of message.parts) {
-        console.log(part.type);
         if (
           part.type === "tool-todo_list" &&
           part.state === "output-available"
@@ -132,7 +182,7 @@ export function CodexMessageOverview({
           lastToolPart = undefined;
         }
         if (part.type.startsWith("tool-") && part.type !== "tool-todo_list") {
-          lastToolPart = part;
+          lastToolPart = part as never;
         }
       }
     }
@@ -141,9 +191,6 @@ export function CodexMessageOverview({
 
   return (
     <>
-      <MessageContent>
-        <Loader />
-      </MessageContent>
       {(task_revision.status === "preparing" || todoListPart) && (
         <Queue className="w-full">
           {task_revision.status === "preparing" && (
@@ -210,6 +257,122 @@ export function CodexMessageOverview({
         </MessageContent>
       )}
       {lastToolPart && <CodexToolPart part={lastToolPart} />}
+    </>
+  );
+}
+
+function ClaudeOverviewContent({
+  task_revision,
+  message,
+  branchCreated,
+  vercelSandboxCreated,
+}: {
+  task_revision: UISessionData["task_revisions"][number];
+  branchCreated: boolean;
+  vercelSandboxCreated: boolean;
+  message: UIMessage | undefined;
+}) {
+  const { todoListPart, lastReasoningOrTextPart, lastToolPart } =
+    useMemo(() => {
+      let todoListPart:
+        | (ClaudeBuiltinToolPart<"TodoWrite"> & {
+            state: "output-available";
+          })
+        | undefined;
+
+      let lastReasoningOrTextPart:
+        | (UIMessagePart<UIDataTypes, UITools> & { type: "reasoning" })
+        | (UIMessagePart<UIDataTypes, UITools> & { type: "text" })
+        | undefined;
+      let lastToolPart: DynamicToolUIPart | undefined;
+      if (message) {
+        for (const part of message.parts) {
+          if (
+            part.type === "dynamic-tool" &&
+            part.toolName === "TodoWrite" &&
+            part.state === "output-available"
+          ) {
+            todoListPart = part as never;
+            continue;
+          }
+          if (part.type === "reasoning" || part.type === "text") {
+            lastReasoningOrTextPart = part;
+            lastToolPart = undefined;
+          }
+          if (part.type === "dynamic-tool") {
+            lastToolPart = part as never;
+          }
+        }
+      }
+      return { todoListPart, lastReasoningOrTextPart, lastToolPart };
+    }, [message]);
+
+  return (
+    <>
+      {(task_revision.status === "preparing" || todoListPart) && (
+        <Queue className="w-full">
+          {task_revision.status === "preparing" && (
+            <QueueSection className="w-full">
+              <QueueSectionTrigger>
+                <QueueSectionLabel label="Prepare execution environment">
+                  Prepare execution environment
+                </QueueSectionLabel>
+              </QueueSectionTrigger>
+              <QueueSectionContent>
+                <QueueList>
+                  <QueueItem>
+                    <div className="flex items-center gap-2">
+                      <QueueItemIndicator completed={branchCreated} />
+                      <QueueItemContent completed={branchCreated}>
+                        Creating TiDB Cloud Branch
+                      </QueueItemContent>
+                    </div>
+                  </QueueItem>
+                  <QueueItem>
+                    <div className="flex items-center gap-2">
+                      <QueueItemIndicator completed={vercelSandboxCreated} />
+                      <QueueItemContent completed={vercelSandboxCreated}>
+                        Creating Vercel Sandbox for coding agent execution
+                      </QueueItemContent>
+                    </div>
+                  </QueueItem>
+                </QueueList>
+              </QueueSectionContent>
+            </QueueSection>
+          )}
+          {todoListPart && (
+            <QueueSection className="w-full">
+              <QueueSectionTrigger>
+                <QueueSectionLabel
+                  label="tasks todo"
+                  count={todoListPart.input.todos.length}
+                />
+              </QueueSectionTrigger>
+              <QueueSectionContent>
+                <ClaudeTodoList todos={todoListPart.input.todos} />
+              </QueueSectionContent>
+            </QueueSection>
+          )}
+        </Queue>
+      )}
+
+      {lastReasoningOrTextPart?.type === "reasoning" && (
+        <MessageContent>
+          <Streamdown className="text-sm text-muted-foreground">
+            {lastReasoningOrTextPart.text}
+          </Streamdown>
+        </MessageContent>
+      )}
+
+      {lastReasoningOrTextPart?.type === "text" && (
+        <MessageContent>
+          <Streamdown className="text-sm">
+            {lastReasoningOrTextPart.text}
+          </Streamdown>
+        </MessageContent>
+      )}
+
+      {lastToolPart && <ClaudeToolPart part={lastToolPart} />}
     </>
   );
 }

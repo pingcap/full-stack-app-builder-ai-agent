@@ -27,6 +27,7 @@ export async function getSessionData(slug: string) {
             "vercel_team_id",
             "vercel_project_id",
             "tidbcloud_cluster_id",
+            "coding_agent_type",
           ])
           .where("project.id", "=", eb.ref("ui_session.project_id")),
       ).as("project"),

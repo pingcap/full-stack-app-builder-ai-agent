@@ -16,6 +16,7 @@ import {
 
 const requestSchema = z.object({
   first_prompt: z.string(),
+  coding_agent_type: z.enum(["codex", "claude"]),
 });
 
 export type CreateSessionResult = ReturnType<typeof POST> extends Promise<
@@ -25,7 +26,9 @@ export type CreateSessionResult = ReturnType<typeof POST> extends Promise<
   : never;
 
 export async function POST(request: NextRequest) {
-  const { first_prompt } = requestSchema.parse(await request.json());
+  const { first_prompt, coding_agent_type } = requestSchema.parse(
+    await request.json(),
+  );
   const suffix = Math.random().toString(36).substring(2, 6);
   const settings = await getSessionUserSettings();
 
@@ -101,7 +104,7 @@ Help user to generate meta fields, use kebab case.
     github_repository_name: `${github_repository_name}-${suffix}`,
     tidbcloud_cluster_name: `${tidbcloud_cluster_name}-${suffix}`,
     vercel_project_name: `${vercel_project_name}-${suffix}`,
-    coding_agent_type: "codex",
+    coding_agent_type,
   });
 
   const octokit = getGitHubClient(settings.github_token);

@@ -1,4 +1,4 @@
-import { isToolUIPart, type UIDataTypes, type UIMessage } from "ai";
+import { isToolUIPart, type UIMessage } from "ai";
 import {
   Conversation,
   ConversationContent,
@@ -10,12 +10,15 @@ import {
   ReasoningContent,
   ReasoningTrigger,
 } from "@/components/ai-elements/reasoning";
-import { CodexToolPart, type CodexTools } from "@/components/codex-tool-part";
+import { ClaudeToolPart } from "@/components/claude-tool-part";
+import { CodexToolPart } from "@/components/codex-tool-part";
 
-export function CodexMessagePreview({
+export function MessagePreview({
+  coding_agent_type,
   message,
 }: {
-  message: UIMessage<unknown, UIDataTypes, CodexTools> | undefined | null;
+  coding_agent_type: string;
+  message: UIMessage | undefined | null;
 }) {
   return (
     <Conversation className="size-full">
@@ -37,13 +40,24 @@ export function CodexMessagePreview({
                   </Reasoning>
                 );
               default:
-                if (isToolUIPart(part)) {
-                  return (
-                    <CodexToolPart
-                      key={`${part.type}-${index}`}
-                      part={part as never}
-                    />
-                  );
+                if (coding_agent_type === "codex") {
+                  if (isToolUIPart(part)) {
+                    return (
+                      <CodexToolPart
+                        key={`${part.type}-${index}`}
+                        part={part as never}
+                      />
+                    );
+                  }
+                } else if (coding_agent_type === "claude") {
+                  if (part.type === "dynamic-tool") {
+                    return (
+                      <ClaudeToolPart
+                        key={`${part.type}-${index}`}
+                        part={part}
+                      />
+                    );
+                  }
                 }
                 return null;
             }

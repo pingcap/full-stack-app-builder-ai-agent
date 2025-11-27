@@ -14,7 +14,7 @@ type CreateTaskRevisionParams = Pick<
   Insertable<DB["task_revision"]>,
   "prompt" | "task_id" | "user_prompt"
 > & {
-  sandbox_type: 'codex' | 'claude-code'
+  sandbox_type: "codex" | "claude";
 };
 
 export async function createTaskRevision(params: CreateTaskRevisionParams) {
@@ -110,7 +110,7 @@ trap call_err_hook ERR
 
 # executing coding agent
 echo "Executing coding agent..."
-code-tee --stream-server-url ${quote([process.env.STREAM_PROXY_URL!])} --stream-id ${quote([session])} codex ${quote([params.prompt])} --dangerously-bypass-approvals-and-sandbox 1>/tmp/result.txt
+code-tee --stream-server-url ${quote([process.env.STREAM_PROXY_URL!])} --stream-id ${quote([session])} ${project.coding_agent_type} ${quote([params.prompt])} ${agentOptions[project.coding_agent_type]} 1>/tmp/result.txt
 RESULT_TXT=$(cat /tmp/result.txt || echo '')
 
 # push commit
@@ -122,12 +122,12 @@ git commit --allow-empty -m ${quote([params.user_prompt])}
 git push origin ${task.git_branch_name}
 GIT_COMMIT_SHA=$(git rev-parse HEAD)
 
-# save codex sessions
-echo "Saving codex sessions..."
+# save ${project.coding_agent_type} sessions
+echo "Saving ${project.coding_agent_type} sessions..."
 cd ~
-zip codex-data.zip -r .codex
+zip ${project.coding_agent_type}-data.zip -r .${project.coding_agent_type}
 vercel telemetry disable
-vercel blob put codex-data.zip --token "$VERCEL_TOKEN" --rw-token "$BLOB_READ_WRITE_TOKEN" --force --pathname "codex-sessions/$USER_ID/$SANDBOX_SESSION_ID/codex-data.zip"
+vercel blob put ${project.coding_agent_type}-data.zip --token "$VERCEL_TOKEN" --rw-token "$BLOB_READ_WRITE_TOKEN" --force --pathname "${project.coding_agent_type}-sessions/$USER_ID/$SANDBOX_SESSION_ID/${project.coding_agent_type}-data.zip"
 
 # finish this command
 call_finish_hook
@@ -146,6 +146,8 @@ call_finish_hook
           VERCEL_TOKEN: settings?.vercel_token!,
           BLOB_READ_WRITE_TOKEN: settings?.vercel_blob_storage_rw_token!,
           USER_ID: String(settings?.user_id!),
+          ANTHROPIC_BASE_URL: "https://cr.breeswish.org/api",
+          ANTHROPIC_AUTH_TOKEN: process.env.CRS_OAI_KEY!,
         },
       });
 
@@ -186,8 +188,6 @@ export async function getTaskRevisionCommandStatus(id: number) {
     const dbSandbox = await get(db, "vercel_sandbox", {
       id: revision.vercel_sandbox_id!,
     });
-
-    console.log(generateSessionId(project.id, revision.task_id, revision.id));
 
     const sandbox = await Sandbox.get({
       sandboxId: dbSandbox.id,
@@ -234,3 +234,8 @@ export async function getTaskRevisionCommandStatus(id: number) {
     return null;
   }
 }
+
+const agentOptions: Record<string, string> = {
+  claude: "--dangerously-skip-permissions",
+  codex: "--dangerously-bypass-approvals-and-sandbox",
+};
