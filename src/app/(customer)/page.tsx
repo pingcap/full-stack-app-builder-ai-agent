@@ -1,8 +1,6 @@
 "use client";
 
-import { Github } from "lucide-react";
 import { useRouter } from "next/navigation";
-import type * as React from "react";
 import {
   type FormEvent,
   useEffectEvent,
@@ -65,7 +63,7 @@ export default function Page() {
   );
 
   return (
-    <div className="h-full w-full flex flex-col items-center px-4">
+    <div className="h-full w-full flex flex-col jus items-center px-4">
       <div className="text-center space-y-2 w-full max-w-xl pt-12">
         <h1 className="text-2xl font-semibold">
           Full-Stack App-Builder AI Agent
