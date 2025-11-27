@@ -58,7 +58,10 @@ export function TaskRevisionPreviewClient({
             ))}
           </SelectContent>
         </Select>
-        <WebPreviewUrl />
+        <WebPreviewUrl
+          disabled={url === ""}
+          placeholder={url === "" ? "" : undefined}
+        />
         <WebPreviewNavigationButton
           tooltip="Open in browser"
           onClick={() => window.open(url, "_blank")}
@@ -66,7 +69,7 @@ export function TaskRevisionPreviewClient({
           <ExternalLinkIcon />
         </WebPreviewNavigationButton>
       </WebPreviewNavigation>
-      <WebPreviewBody />
+      <WebPreviewBody src={url === "" ? "about:blank" : undefined} />
     </WebPreview>
   );
 }

@@ -96,10 +96,12 @@ export default async function SessionPage({
                             }
                           />
                         )}
-                        <Actions
-                          task_revision={task_revision}
-                          index={task_revision_index}
-                        />
+                        {task_revision.status !== "interrupted" && (
+                          <Actions
+                            task_revision={task_revision}
+                            index={task_revision_index}
+                          />
+                        )}
                       </Message>
                     </Fragment>
                   ),

@@ -15,13 +15,17 @@ export function SessionTaskRevisionPreview({
 
   const [url, setUrl] = useState<string | undefined>(undefined);
 
+  const revisionStatus = session.task_revisions[previewIndex]?.status;
   const sandboxId = session.task_revisions[previewIndex]?.vercel_sandbox_id;
 
   useEffect(() => {
     setUrl(undefined);
-  }, [previewIndex]);
+  }, [previewIndex, revisionStatus]);
 
   useEffect(() => {
+    if (revisionStatus === "interrupted") {
+      return;
+    }
     if (sandboxId) {
       const ac = new AbortController();
       fetch(
@@ -38,17 +42,17 @@ export function SessionTaskRevisionPreview({
         ac.abort();
       };
     }
-  }, [session.project_id, sandboxId]);
+  }, [session.project_id, sandboxId, revisionStatus]);
 
   return (
     <TaskRevisionPreviewClient
-      key={`${previewIndex}-${url}`}
+      key={`${previewIndex}-${revisionStatus}-${url}`}
       index={previewIndex}
       checkpoints={session.task_revisions.map((rev, index) => ({
         index,
         name: rev.user_prompt,
       }))}
-      url={url ?? "about:blank"}
+      url={url ?? ""}
     />
   );
 }

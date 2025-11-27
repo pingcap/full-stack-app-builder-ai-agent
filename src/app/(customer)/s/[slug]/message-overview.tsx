@@ -32,9 +32,10 @@ import {
   ClaudeToolPart,
 } from "@/components/claude-tool-part";
 import { CodexToolPart, type CodexTools } from "@/components/codex-tool-part";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useMessageSession } from "@/hooks/use-message-session";
 import type { DB } from "@/lib/db/schema";
-import { handleFetchResponseError } from "@/lib/errors";
+import { getErrorMessage, handleFetchResponseError } from "@/lib/errors";
 import { generateSessionId } from "@/lib/tasks";
 
 export function MessageOverview({
@@ -124,9 +125,20 @@ export function MessageOverview({
 
   return (
     <>
-      <MessageContent>
-        <Loader />
-      </MessageContent>
+      {task_revision.status === "running" && (
+        <MessageContent>
+          <Loader />
+        </MessageContent>
+      )}
+      {task_revision.status === "interrupted" && (
+        <Alert variant="destructive">
+          <AlertTitle>Execution interrupted</AlertTitle>
+          <AlertDescription>
+            {getErrorMessage((message?.metadata as any)?.error) ??
+              task_revision.error}
+          </AlertDescription>
+        </Alert>
+      )}
       {coding_agent_type === "codex" && (
         <CodexOverviewContent
           task_revision={task_revision}
