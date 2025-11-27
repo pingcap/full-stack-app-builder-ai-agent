@@ -12,7 +12,12 @@ export function Reloader({ session }: { session: UISessionData }) {
 
     if (session.project?.status !== "ready") {
       shouldReload = true;
-      interval = 1000;
+      interval = 3000;
+    }
+
+    if (session.task_revisions.length === 0) {
+      shouldReload = true;
+      interval = 2500;
     }
 
     for (const revision of session.task_revisions) {
