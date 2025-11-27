@@ -95,13 +95,13 @@ export function NavProjects({
         <button
           type="button"
           aria-expanded={showAll}
-          className="flex w-full items-center justify-center gap-1 rounded-md py-1 text-xs text-muted-foreground transition hover:text-foreground"
+          className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-md border border-border bg-background/80 px-2 py-1 text-xs font-medium text-muted-foreground transition hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           onClick={() => setShowAll((prev) => !prev)}
         >
+          <span>{showAll ? "Show less" : "Show all"}</span>
           <ChevronDown
             className={`h-4 w-4 transition-transform ${showAll ? "rotate-180" : ""}`}
           />
-          <span>{showAll ? "Show less" : "Show all"}</span>
         </button>
       ) : null}
     </SidebarGroup>
