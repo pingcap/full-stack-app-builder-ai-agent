@@ -264,6 +264,9 @@ async function prepareVercelProject(
 
   // poll vercel project state
   while (true) {
+    if (signal.aborted) {
+      break;
+    }
     try {
       const { name: projectName } = await fetch(
         `https://api.vercel.com/v1/projects/${projectId}?teamId=${vercelTeamId}`,
@@ -275,7 +278,7 @@ async function prepareVercelProject(
         },
       ).then((res) => {
         if (!res.ok) {
-          throw new Error("Failed to fetch vercel project info");
+          return { name: undefined };
         }
         return res.json();
       });
@@ -284,7 +287,7 @@ async function prepareVercelProject(
       }
     } catch {
       if (signal.aborted) {
-        throw new Error("Prepare vercel project timeout");
+        break;
       }
     }
   }
