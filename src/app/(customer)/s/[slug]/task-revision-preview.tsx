@@ -4,6 +4,7 @@ import { use, useEffect, useState } from "react";
 import { PreviewIndexContext } from "@/app/(customer)/s/[slug]/preview-index-provider";
 import type { UISessionData } from "@/app/(customer)/s/[slug]/query";
 import { TaskRevisionPreviewClient } from "@/app/(customer)/s/[slug]/task-revision-preview-client";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { handleFetchResponseError } from "@/lib/errors";
 
 export function SessionTaskRevisionPreview({
@@ -14,11 +15,15 @@ export function SessionTaskRevisionPreview({
   const { previewIndex } = use(PreviewIndexContext);
 
   const [url, setUrl] = useState<string | undefined>(undefined);
+  const [errorTitle, setErrorTitle] = useState<string | undefined>(undefined);
+  const [error, setError] = useState<string | undefined>(undefined);
 
   const revision = session.task_revisions[previewIndex];
 
   useEffect(() => {
     setUrl(undefined);
+    setErrorTitle(undefined);
+    setError(undefined);
   }, [previewIndex, revision?.status]);
 
   useEffect(() => {
@@ -41,7 +46,13 @@ export function SessionTaskRevisionPreview({
           if (!/^https?:\/\//.test(url)) {
             url = `https://${url}`;
           }
-          setUrl(url);
+          if (deployment.readyState === "ERROR") {
+            setError(deployment.errorMessage);
+            setErrorTitle(deployment.errorCode);
+            setUrl("");
+          } else {
+            setUrl(url);
+          }
         });
     } else if (revision.vercel_sandbox_id) {
       fetch(
@@ -74,6 +85,14 @@ export function SessionTaskRevisionPreview({
         name: rev.user_prompt,
       }))}
       url={url ?? ""}
+      error={
+        error != null ? (
+          <Alert>
+            {errorTitle && <AlertTitle>{errorTitle}</AlertTitle>}
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        ) : undefined
+      }
     />
   );
 }

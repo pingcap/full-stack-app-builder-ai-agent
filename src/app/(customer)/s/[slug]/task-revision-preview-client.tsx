@@ -1,6 +1,6 @@
 import { useSize } from "@radix-ui/react-use-size";
 import { ExternalLinkIcon } from "lucide-react";
-import { use, useRef, useState } from "react";
+import { type ReactNode, use, useRef, useState } from "react";
 import { PreviewIndexContext } from "@/app/(customer)/s/[slug]/preview-index-provider";
 import {
   WebPreview,
@@ -21,8 +21,10 @@ export function TaskRevisionPreviewClient({
   url,
   checkpoints,
   index,
+  error,
 }: {
   url: string;
+  error?: ReactNode;
   checkpoints: { index: number; name: string }[];
   index: number;
 }) {
@@ -69,7 +71,13 @@ export function TaskRevisionPreviewClient({
           <ExternalLinkIcon />
         </WebPreviewNavigationButton>
       </WebPreviewNavigation>
-      <WebPreviewBody src={url === "" ? "about:blank" : undefined} />
+      {error != null ? (
+        <div className="size-full p-4 flex items-center justify-center">
+          {error}
+        </div>
+      ) : (
+        <WebPreviewBody src={url === "" ? "about:blank" : undefined} />
+      )}
     </WebPreview>
   );
 }
