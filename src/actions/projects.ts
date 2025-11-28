@@ -259,19 +259,43 @@ async function prepareVercelProject(
       name,
     },
   });
-  await update(
-    db,
-    "project",
-    { vercel_project_id: vercelProject.id },
-    { id: projectId },
-  );
+  const signal = AbortSignal.timeout(10000);
+
+  // poll vercel project state
+  while (true) {
+    try {
+      const { name: projectName } = await fetch(
+        `https://api.vercel.com/v1/projects/${projectId}?teamId=${vercelTeamId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${settings.vercel_token}`,
+          },
+          signal: signal,
+        },
+      ).then((res) => {
+        if (!res.ok) {
+          throw new Error("Failed to fetch vercel project info");
+        }
+        return res.json();
+      });
+      if (projectName) {
+        break;
+      }
+    } catch {
+      if (signal.aborted) {
+        throw new Error("Prepare vercel project timeout");
+      }
+    }
+  }
 
   // TODO Install github app
-
   await update(
     db,
     "project",
-    { vercel_team_token: settings.vercel_token },
+    {
+      vercel_project_id: vercelProject.id,
+      vercel_team_token: settings.vercel_token,
+    },
     { id: projectId },
   );
 }

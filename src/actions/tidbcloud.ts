@@ -1,5 +1,4 @@
 import { randomUUID } from "node:crypto";
-import { kebabCase } from "change-case";
 import { getSessionUserSettings } from "@/lib/auth";
 import db from "@/lib/db/db";
 import { get, update } from "@/lib/kysely-utils";
@@ -77,7 +76,6 @@ export async function createTiDBCloudBranch(
   console.log("polling branch state");
 
   while (true) {
-    console.log(branch.state);
     if (branch.state === "CREATING") {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       branch = await getBranch(
