@@ -10,8 +10,20 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
-import { useSelectedLayoutSegments } from "next/navigation";
+import { useRouter, useSelectedLayoutSegments } from "next/navigation";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,12 +41,14 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import type { DB } from "@/lib/db/schema";
+import { getErrorMessage, handleFetchResponseError } from "@/lib/errors";
 
 export function NavProjects({
   sessions,
 }: {
   sessions: Selectable<DB["ui_session"]>[];
 }) {
+  const router = useRouter();
   const { isMobile } = useSidebar();
   const [_, slug] = useSelectedLayoutSegments();
   const [showAll, setShowAll] = useState(false);
@@ -71,10 +85,50 @@ export function NavProjects({
                 side={isMobile ? "bottom" : "right"}
                 align={isMobile ? "end" : "start"}
               >
-                <DropdownMenuItem>
-                  <Trash2 className="text-muted-foreground" />
-                  <span>Delete Project</span>
-                </DropdownMenuItem>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <DropdownMenuItem onSelect={(ev) => ev.preventDefault()}>
+                      <Trash2 className="text-muted-foreground" />
+                      <span>Delete Project</span>
+                    </DropdownMenuItem>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Are you sure to delete {item.slug}?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will delete github repo, vercel project and
+                        tidbcloud cluster.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogAction
+                        onClick={() => {
+                          const id = toast.loading(`Deleting ${item.slug}`);
+                          fetch(`/api/v1/projects/${item.project_id}`, {
+                            method: "DELETE",
+                          })
+                            .then(handleFetchResponseError)
+                            .then(() => {
+                              toast.dismiss(id);
+                              toast.success(`Deleted ${item.slug}.`);
+                              router.refresh();
+                            })
+                            .catch((err) => {
+                              toast.dismiss(id);
+                              toast.error(`Failed to delete ${item.slug}`, {
+                                description: getErrorMessage(err),
+                              });
+                            });
+                        }}
+                        asChild
+                      >
+                        <Button variant="destructive">DELETE IT</Button>
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>

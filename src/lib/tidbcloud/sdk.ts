@@ -113,6 +113,27 @@ export async function getCluster(
   return await response.json();
 }
 
+export async function deleteCluster(
+  clusterId: string,
+  settings: TiDBCloudSettings,
+): Promise<any> {
+  const response = await tidbCloudFetch(
+    `https://serverless.tidbapi.com/v1beta1/clusters/${clusterId}`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      digest: {
+        username: settings.tidbcloud_public_key,
+        password: settings.tidbcloud_private_key,
+      },
+    },
+  ).then(handleError);
+
+  return await response.json();
+}
+
 export async function createBranch(
   { displayName, clusterId, rootPassword, parentId }: CreateBranchParams,
   settings: TiDBCloudSettings,
