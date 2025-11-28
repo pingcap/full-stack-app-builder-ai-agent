@@ -1,6 +1,10 @@
+import { getErrorMessage } from "@/lib/errors";
 import { Sandbox } from "@vercel/sandbox";
+import { Vercel } from "@vercel/sdk";
+import type { CreateCustomEnvironmentResponseBody } from "@vercel/sdk/models/createcustomenvironmentop";
+import type { GetCustomEnvironmentResponseBody } from "@vercel/sdk/models/getcustomenvironmentop";
 import type { Insertable } from "kysely";
-import { after } from "next/server";
+import { after, NextResponse } from "next/server";
 import { quote } from "shell-quote";
 import { createTiDBCloudBranch } from "@/actions/tidbcloud";
 import { createSandbox } from "@/actions/vercel";
@@ -239,3 +243,169 @@ const agentOptions: Record<string, string> = {
   claude: "--dangerously-skip-permissions",
   codex: "--dangerously-bypass-approvals-and-sandbox",
 };
+
+export async function deployTask(
+  projectId: number,
+  taskId: number,
+  taskRevisionId: number,
+) {
+  const project = await get(db, "project", { id: projectId });
+  const task = await get(db, "task", { id: taskId });
+  const taskRevision = await get(db, "task_revision", { id: taskRevisionId });
+
+  if (!taskRevision.git_commit_sha) {
+    await update(
+      db,
+      "task_revision",
+      {
+        vercel_deployment_status: "ignored",
+        vercel_deployment_error: "task revision not committed.",
+      },
+      { id: taskRevisionId },
+    );
+    throw new Error("task revision not committed.");
+  }
+
+  if (!taskRevision.tidbcloud_branch_id) {
+    await update(
+      db,
+      "task_revision",
+      {
+        vercel_deployment_status: "ignored",
+        vercel_deployment_error: "no connection info",
+      },
+      { id: taskRevisionId },
+    );
+    throw new Error("no connection info");
+  }
+
+  const branch = await get(db, "tidbcloud_branch", {
+    id: taskRevision.tidbcloud_branch_id,
+  });
+
+  if (!branch.connection_url) {
+    await update(
+      db,
+      "task_revision",
+      {
+        vercel_deployment_status: "ignored",
+        vercel_deployment_error: "no connection info",
+      },
+      { id: taskRevisionId },
+    );
+    throw new Error("no connection info");
+  }
+
+  const vercel = new Vercel({
+    bearerToken: project.vercel_team_token,
+  });
+
+  let env:
+    | GetCustomEnvironmentResponseBody
+    | CreateCustomEnvironmentResponseBody;
+
+  try {
+    env = await vercel.environment.getCustomEnvironment({
+      teamId: project.vercel_team_id,
+      idOrName: project.vercel_project_id,
+      environmentSlugOrId: "codegen-tidb-ai-preview",
+    });
+  } catch (e) {
+    try {
+      env = await vercel.environment.createCustomEnvironment({
+        teamId: project.vercel_team_id,
+        idOrName: project.vercel_project_id,
+        requestBody: {
+          slug: "codegen-tidb-ai-preview",
+          description: `This environment is used to deploy codes generated from codegen.tidb.ai. The environment variables will be updated before each deployment execution. do not add env variables to this project.`,
+        },
+      });
+    } catch (e) {
+      const errorMessage = `failed to create codegen-tidb-ai-preview environment. ${getErrorMessage(e)}`;
+      await update(
+        db,
+        "task_revision",
+        {
+          vercel_deployment_status: "ignored",
+          vercel_deployment_error: errorMessage,
+        },
+        { id: taskRevisionId },
+      );
+      throw new Error(errorMessage);
+    }
+  }
+
+  try {
+    await vercel.projects.createProjectEnv({
+      teamId: project.vercel_team_id,
+      idOrName: project.vercel_project_id,
+      upsert: "true",
+      requestBody: {
+        key: "DATABASE_URL",
+        value: branch.connection_url,
+        customEnvironmentIds: [env.id],
+        target: [],
+        type: "encrypted",
+      },
+    });
+  } catch (e) {
+    const errorMessage = `failed to setup codegen-tidb-ai-preview environment. ${getErrorMessage(e)}`;
+    await update(
+      db,
+      "task_revision",
+      {
+        vercel_deployment_status: "ignored",
+        vercel_deployment_error: errorMessage,
+      },
+      { id: taskRevisionId },
+    );
+
+    throw new Error(errorMessage);
+  }
+
+  try {
+    const deployment = await vercel.deployments.createDeployment({
+      forceNew: "1",
+      teamId: project.vercel_team_id,
+      requestBody: {
+        name: project.github_repo,
+        gitSource: {
+          org: project.github_owner,
+          repo: project.github_repo,
+          ref: task.git_branch_name,
+          sha: taskRevision.git_commit_sha,
+          type: "github",
+        },
+        project: project.vercel_project_id,
+        projectSettings: {
+          nodeVersion: "24.x",
+          serverlessFunctionRegion: "sin1",
+          framework: "nextjs",
+        },
+        customEnvironmentSlugOrId: env.id,
+      },
+    });
+    await update(
+      db,
+      "task_revision",
+      {
+        vercel_deployment_id: deployment.id,
+      },
+      { id: taskRevisionId },
+    );
+
+    return deployment;
+  } catch (e) {
+    const errorMessage = `Failed to deploy. ${getErrorMessage(e)}`;
+    await update(
+      db,
+      "task_revision",
+      {
+        vercel_deployment_status: "failed",
+        vercel_deployment_error: errorMessage,
+      },
+      { id: taskRevisionId },
+    );
+    throw new Error(errorMessage);
+  }
+}

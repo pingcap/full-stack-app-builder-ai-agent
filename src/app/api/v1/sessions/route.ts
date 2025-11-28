@@ -106,6 +106,7 @@ Help user to generate meta fields, use kebab case.
     tidbcloud_cluster_name: `${tidbcloud_cluster_name}-${suffix}`,
     vercel_project_name: `${vercel_project_name}-${suffix}`,
     coding_agent_type,
+    auto_deployment: 1,
   });
 
   const octokit = getGitHubClient(settings.github_token);

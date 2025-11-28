@@ -1,3 +1,7 @@
+import { HTTPClientError } from "@vercel/sdk/models/httpclienterrors";
+import { SDKValidationError } from "@vercel/sdk/models/sdkvalidationerror";
+import { VercelError } from "@vercel/sdk/models/vercelerror";
+
 export class ResponseError extends Error {
   readonly response: Response;
 
@@ -46,6 +50,18 @@ export function getErrorMessage(error: unknown): string {
     return "Unknown error";
   }
   if (typeof error === "object") {
+    if (error instanceof VercelError) {
+      return `${error.name}: ${error.statusCode} ${error.message}`;
+    }
+
+    if (error instanceof HTTPClientError) {
+      return `${error.name}: ${error.message}`;
+    }
+
+    if (error instanceof SDKValidationError) {
+      return `${error.name}: ${error.pretty()}`;
+    }
+
     return String(
       getErrorMessage((error as Record<string, unknown>).message) ??
         JSON.stringify(error),

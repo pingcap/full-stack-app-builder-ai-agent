@@ -257,6 +257,7 @@ async function prepareVercelProject(
     teamId: vercelTeamId,
     requestBody: {
       name,
+      ssoProtection: null,
     },
   });
   const signal = AbortSignal.timeout(10000);

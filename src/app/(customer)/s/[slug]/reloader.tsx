@@ -31,6 +31,11 @@ export function Reloader({ session }: { session: UISessionData }) {
         interval = 5000;
         break;
       }
+      if (revision.status === "deploying") {
+        shouldReload = true;
+        interval = 5000;
+        break;
+      }
     }
 
     if (shouldReload) {

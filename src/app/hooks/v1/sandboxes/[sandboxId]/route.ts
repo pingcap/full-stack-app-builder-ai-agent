@@ -9,6 +9,7 @@ import {
 import { notFound } from "next/navigation";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { deployTask } from "@/actions/task-revisions";
 import db from "@/lib/db/db";
 import { getErrorMessage } from "@/lib/errors";
 import { get, getAll, update } from "@/lib/kysely-utils";
@@ -105,7 +106,7 @@ export async function POST(
       projectId: project.vercel_project_id,
       token: project.vercel_team_token,
     }),
-    handleTaskRevisionResult(event, taskRevision, logs),
+    handleTaskRevisionResult(event, taskRevision, project, logs),
   ]);
 
   return NextResponse.json({
@@ -137,10 +138,9 @@ async function handleSandbox(sandboxId: string, credentials: Credentials) {
 async function handleTaskRevisionResult(
   event: z.infer<typeof requestSchema>,
   taskRevision: Awaited<ReturnType<typeof get<"task_revision">>>,
+  project: Awaited<ReturnType<typeof get<"project">>>,
   logs: string | null,
 ) {
-  console.log(event);
-
   switch (event.type) {
     case "sandbox_finished": {
       const message = await collectStream(event.session);
@@ -148,7 +148,7 @@ async function handleTaskRevisionResult(
         db,
         "task_revision",
         {
-          status: "finished",
+          status: project.auto_deployment === 1 ? "deploying" : "finished",
           error: logs,
           stopped_at: new Date(),
           agent_message: JSON.stringify(message ?? null),
@@ -157,6 +157,26 @@ async function handleTaskRevisionResult(
         },
         { id: taskRevision.id },
       );
+
+      try {
+        await deployTask(
+          taskRevision.project_id,
+          taskRevision.task_id,
+          taskRevision.id,
+        );
+      } catch (e) {
+        console.error(e);
+      } finally {
+        await update(
+          db,
+          "task_revision",
+          {
+            status: "finished",
+          },
+          { id: taskRevision.id },
+        );
+      }
+
       break;
     }
     case "sandbox_interrupted": {

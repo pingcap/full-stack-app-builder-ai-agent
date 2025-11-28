@@ -58,6 +58,7 @@ export async function getSessionData(slug: string) {
             "stopped_at",
             "project_id",
             "task_id",
+            "vercel_deployment_id",
           ])
           .where("task_id", "=", eb.ref("ui_session.task_id"))
           .orderBy("ordinal", "asc"),

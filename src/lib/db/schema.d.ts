@@ -22,6 +22,7 @@ export type JsonPrimitive = boolean | number | string | null;
 export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
 export interface Project {
+  auto_deployment: Generated<number>;
   coding_agent_type: string;
   description: string;
   error_message: string | null;
@@ -67,6 +68,9 @@ export interface TaskRevision {
   tidbcloud_branch_id: string | null;
   user_id: number;
   user_prompt: string;
+  vercel_deployment_error: string | null;
+  vercel_deployment_id: string | null;
+  vercel_deployment_status: string | null;
   vercel_sandbox_id: string | null;
 }
 

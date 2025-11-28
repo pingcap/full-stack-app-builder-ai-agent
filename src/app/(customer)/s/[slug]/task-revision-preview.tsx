@@ -15,21 +15,37 @@ export function SessionTaskRevisionPreview({
 
   const [url, setUrl] = useState<string | undefined>(undefined);
 
-  const revisionStatus = session.task_revisions[previewIndex]?.status;
-  const sandboxId = session.task_revisions[previewIndex]?.vercel_sandbox_id;
+  const revision = session.task_revisions[previewIndex];
 
   useEffect(() => {
     setUrl(undefined);
-  }, [previewIndex, revisionStatus]);
+  }, [previewIndex, revision?.status]);
 
   useEffect(() => {
-    if (revisionStatus === "interrupted") {
+    if (!revision || revision.status === "interrupted") {
       return;
     }
-    if (sandboxId) {
-      const ac = new AbortController();
+    const ac = new AbortController();
+
+    if (revision.vercel_deployment_id) {
       fetch(
-        `/api/v1/vercel-sandboxes/${sandboxId}/ports?projectId=${session.project_id}`,
+        `/api/v1/projects/${revision.project_id}/tasks/${revision.task_id}/revisions/${revision.id}/deployment`,
+        {
+          signal: ac.signal,
+        },
+      )
+        .then(handleFetchResponseError)
+        .then((res) => res.json())
+        .then((deployment) => {
+          let url = deployment.url;
+          if (!/^https?:\/\//.test(url)) {
+            url = `https://${url}`;
+          }
+          setUrl(url);
+        });
+    } else if (revision.vercel_sandbox_id) {
+      fetch(
+        `/api/v1/vercel-sandboxes/${revision.vercel_sandbox_id}/ports?projectId=${session.project_id}`,
         {
           signal: ac.signal,
         },
@@ -37,16 +53,21 @@ export function SessionTaskRevisionPreview({
         .then(handleFetchResponseError)
         .then((res) => res.json())
         .then((res) => setUrl(res[3000]));
-
-      return () => {
-        ac.abort();
-      };
     }
-  }, [session.project_id, sandboxId, revisionStatus]);
+
+    return () => {
+      ac.abort();
+    };
+  }, [
+    session.project_id,
+    revision?.status,
+    revision?.vercel_deployment_id,
+    revision?.vercel_sandbox_id,
+  ]);
 
   return (
     <TaskRevisionPreviewClient
-      key={`${previewIndex}-${revisionStatus}-${url}`}
+      key={`${previewIndex}-${revision?.status}-${revision?.vercel_deployment_id ?? revision?.vercel_sandbox_id}-${url}`}
       index={previewIndex}
       checkpoints={session.task_revisions.map((rev, index) => ({
         index,
