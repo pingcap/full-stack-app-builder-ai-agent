@@ -1,4 +1,3 @@
-import { getErrorMessage } from "@/lib/errors";
 import { Sandbox } from "@vercel/sandbox";
 import { Vercel } from "@vercel/sdk";
 import type { CreateCustomEnvironmentResponseBody } from "@vercel/sdk/models/createcustomenvironmentop";
@@ -11,6 +10,7 @@ import { createSandbox } from "@/actions/vercel";
 import { getSessionUser, getSessionUserSettings } from "@/lib/auth";
 import db from "@/lib/db/db";
 import type { DB } from "@/lib/db/schema";
+import { getErrorMessage } from "@/lib/errors";
 import { get, getAll, insert, update } from "@/lib/kysely-utils";
 import { generateSessionId } from "@/lib/tasks";
 
@@ -240,7 +240,7 @@ export async function getTaskRevisionCommandStatus(id: number) {
 }
 
 const agentOptions: Record<string, string> = {
-  claude: "--dangerously-skip-permissions",
+  claude: "--dangerously-skip-permissions -c",
   codex: "--dangerously-bypass-approvals-and-sandbox",
 };
 
