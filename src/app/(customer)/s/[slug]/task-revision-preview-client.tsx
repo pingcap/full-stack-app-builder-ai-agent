@@ -1,5 +1,5 @@
 import { useSize } from "@radix-ui/react-use-size";
-import { ExternalLinkIcon } from "lucide-react";
+import { ExternalLinkIcon, RefreshCcwIcon } from "lucide-react";
 import { type ReactNode, use, useRef, useState } from "react";
 import { PreviewIndexContext } from "@/app/(customer)/s/[slug]/preview-index-provider";
 import {
@@ -31,6 +31,7 @@ export function TaskRevisionPreviewClient({
   const [navigationContainerElement, setNavigationContainerElement] =
     useState<HTMLDivElement | null>(null);
   const { setPreviewIndex } = use(PreviewIndexContext);
+  const [iframeRef, setIframeRef] = useState<HTMLIFrameElement | null>(null);
 
   const size = useSize(navigationContainerElement);
 
@@ -65,7 +66,21 @@ export function TaskRevisionPreviewClient({
           placeholder={url === "" ? "" : undefined}
         />
         <WebPreviewNavigationButton
+          tooltip="Refresh"
+          disabled={iframeRef == null}
+          onClick={() => {
+            if (iframeRef) {
+              const src = iframeRef.src;
+              iframeRef.src = "";
+              iframeRef.src = src;
+            }
+          }}
+        >
+          <RefreshCcwIcon />
+        </WebPreviewNavigationButton>
+        <WebPreviewNavigationButton
           tooltip="Open in browser"
+          disabled={iframeRef == null}
           onClick={() => window.open(url, "_blank")}
         >
           <ExternalLinkIcon />
@@ -76,7 +91,10 @@ export function TaskRevisionPreviewClient({
           {error}
         </div>
       ) : (
-        <WebPreviewBody src={url === "" ? "about:blank" : undefined} />
+        <WebPreviewBody
+          ref={setIframeRef}
+          src={url === "" ? "about:blank" : undefined}
+        />
       )}
     </WebPreview>
   );
