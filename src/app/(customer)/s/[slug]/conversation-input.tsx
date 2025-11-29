@@ -19,8 +19,8 @@ export function SessionConversationInput({
   taskId,
   status,
 }: {
-  projectId: number;
-  taskId: number;
+  projectId: number | undefined | null;
+  taskId: number | undefined | null;
   status: ChatStatus;
 }) {
   const [transitioning, startTransition] = useTransition();
@@ -57,7 +57,12 @@ export function SessionConversationInput({
           <PromptInputTools></PromptInputTools>
           <PromptInputSubmit
             status={transitioning ? "submitted" : status}
-            disabled={status !== "ready" || transitioning}
+            disabled={
+              projectId == null ||
+              taskId == null ||
+              status !== "ready" ||
+              transitioning
+            }
           />
         </PromptInputFooter>
       </PromptInput>

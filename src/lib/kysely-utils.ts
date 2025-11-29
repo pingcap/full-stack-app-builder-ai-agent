@@ -1,17 +1,17 @@
-import type { DB } from "@/lib/db/schema";
-import {
-  type AnyColumn,
-  type ExpressionOrFactory,
-  type FilterObject,
-  type Insertable,
-  type OrderByExpression,
-  type OrderByModifiers,
-  type QueryCreator,
-  type Selectable,
-  type SelectType,
-  type SqlBool,
-  type Updateable,
+import type {
+  AnyColumn,
+  ExpressionOrFactory,
+  FilterObject,
+  Insertable,
+  OrderByExpression,
+  OrderByModifiers,
+  QueryCreator,
+  Selectable,
+  SelectType,
+  SqlBool,
+  Updateable,
 } from "kysely";
+import type { DB } from "@/lib/db/schema";
 
 export type DrainOuterGeneric<T> = [T] extends [unknown] ? T : never;
 

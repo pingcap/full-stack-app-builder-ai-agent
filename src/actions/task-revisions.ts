@@ -45,8 +45,10 @@ export async function createTaskRevision(params: CreateTaskRevisionParams) {
     user_id: task.user_id,
   });
 
+  console.log("created task revision", taskRevision);
   after(async () => {
     const session = generateSessionId(project.id, task.id, taskRevision.id);
+    console.log("preparing task revision");
 
     try {
       const [branch, sandbox] = await Promise.all([

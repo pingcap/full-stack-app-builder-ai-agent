@@ -2,11 +2,12 @@ import { randomUUID } from "node:crypto";
 import { connect } from "@tidbcloud/serverless";
 import { kebabCase } from "change-case";
 import type { Insertable } from "kysely";
-import { after, NextResponse } from "next/server";
 import { Octokit } from "octokit";
+import { raceYieldFromAsyncIterators } from "@/lib/async-generators";
 import { getSessionUserSettings } from "@/lib/auth";
 import db from "@/lib/db/db";
 import type { DB } from "@/lib/db/schema";
+import { getErrorMessage } from "@/lib/errors";
 import { insert, update } from "@/lib/kysely-utils";
 import {
   createCluster,
@@ -38,7 +39,34 @@ type CreateProjectParams = Omit<
   tidbcloud_cluster_name?: string;
 };
 
-export async function createProject({
+type CreateProjectEvent =
+  | {
+      type: "creating-github-repo";
+      owner: string;
+      name: string;
+    }
+  | {
+      type: "created-github-repo";
+      mainBranchCommitSha: string;
+    }
+  | {
+      type: "creating-db-project";
+    }
+  | {
+      type: "created-db-project";
+      id: number;
+    }
+  | {
+      type: "project-ready";
+    }
+  | {
+      type: "project-error";
+      error: string;
+    }
+  | PrepareClusterEvent
+  | PrepareVercelProjectEvent;
+
+export async function* createProjectStreamed({
   name,
   description,
   vercel_team_id,
@@ -46,7 +74,7 @@ export async function createProject({
   vercel_project_name,
   tidbcloud_cluster_name,
   coding_agent_type,
-}: CreateProjectParams) {
+}: CreateProjectParams): AsyncGenerator<CreateProjectEvent> {
   const normalizedName = kebabCase(name);
   github_repository_name = github_repository_name ?? normalizedName;
   vercel_project_name = vercel_project_name ?? normalizedName;
@@ -54,40 +82,26 @@ export async function createProject({
 
   const settings = await getSessionUserSettings();
   if (!settings) {
-    throw NextResponse.json(
-      {
-        message: "Invalid user settings.",
-      },
-      { status: 400 },
-    );
+    throw new Error("Invalid user settings.");
   }
 
   if (!isGitHubSettingsValid(settings)) {
-    throw NextResponse.json(
-      {
-        message: "GitHub settings are invalid.",
-      },
-      { status: 400 },
-    );
+    throw new Error("GitHub settings are invalid.");
   }
 
   if (!isTiDBCloudSettingsValid(settings)) {
-    throw NextResponse.json(
-      {
-        message: "TiDB Cloud settings are invalid.",
-      },
-      { status: 400 },
-    );
+    throw new Error("TiDB Cloud settings are invalid.");
   }
 
   if (!isVercelSettingsValid(settings)) {
-    throw NextResponse.json(
-      {
-        message: "Vercel settings are invalid.",
-      },
-      { status: 400 },
-    );
+    throw new Error("Vercel settings are invalid.");
   }
+
+  yield {
+    type: "creating-github-repo",
+    owner: settings.github_login,
+    name: github_repository_name,
+  };
 
   const octokit = new Octokit({ auth: settings.github_token });
 
@@ -98,21 +112,32 @@ export async function createProject({
     name: github_repository_name,
   });
 
-  for (let i = 0; i < 10; i++) {
+  const RETRY_TIMES = 10;
+
+  for (let i = 0; i < RETRY_TIMES; i++) {
     try {
       console.log(
         `Checking if branch main of ${settings.github_login}/${github_repository_name} exists...`,
       );
-      await octokit.rest.repos.getBranch({
+      const branch = await octokit.rest.repos.getBranch({
         branch: "main",
         repo: github_repository_name,
         owner: settings.github_login,
       });
+      yield {
+        type: "created-github-repo",
+        mainBranchCommitSha: branch.data.commit.sha,
+      };
       break;
     } catch {
+      if (i === RETRY_TIMES) {
+        throw new Error("failed to get the main branch of the repo.");
+      }
       await new Promise((resolve) => setTimeout(resolve, 1500));
     }
   }
+
+  yield { type: "creating-db-project" };
 
   const project = await insert(db, "project", {
     user_id: settings.user_id,
@@ -130,58 +155,82 @@ export async function createProject({
     coding_agent_type,
   });
 
-  after(async () => {
-    try {
-      await Promise.all([
-        prepareCluster(
-          { name: tidbcloud_cluster_name, projectId: project.id },
-          settings,
-        ),
-        prepareVercelProject(
-          {
-            name: vercel_project_name,
-            projectId: project.id,
-            vercelTeamId: vercel_team_id,
-            githubOwner: settings.github_login,
-            githubRepo: name,
-          },
-          settings,
-        ),
-      ]);
+  yield { type: "created-db-project", id: project.id };
 
-      await update(
-        db,
-        "project",
-        {
-          status: "ready",
-        },
-        {
-          id: project.id,
-        },
-      );
-    } catch (e) {
-      await update(
-        db,
-        "project",
-        {
-          status: "error",
-          error_message: String((e as any)?.message ?? "Unknown error"),
-        },
-        {
-          id: project.id,
-        },
-      );
-    }
-  });
+  const prepareEvents = raceYieldFromAsyncIterators(
+    prepareClusterStreamed(
+      { name: tidbcloud_cluster_name, projectId: project.id },
+      settings,
+    ),
+    prepareVercelProjectStreamed(
+      {
+        name: vercel_project_name,
+        projectId: project.id,
+        vercelTeamId: vercel_team_id,
+        githubOwner: settings.github_login,
+        githubRepo: name,
+      },
+      settings,
+    ),
+  );
 
-  return project;
+  yield* prepareEvents;
+
+  const result = prepareEvents.results;
+
+  if (result.some((item) => item?.error != null)) {
+    const errors = result
+      .filter((item): item is { error: unknown } => item?.error != null)
+      .map((item) => getErrorMessage(item.error));
+    await update(
+      db,
+      "project",
+      {
+        status: "error",
+        error_message: errors.join("\n"),
+      },
+      {
+        id: project.id,
+      },
+    );
+    yield { type: "project-error", error: errors.join("\n") };
+  } else {
+    await update(
+      db,
+      "project",
+      {
+        status: "ready",
+      },
+      {
+        id: project.id,
+      },
+    );
+    yield { type: "project-ready" };
+  }
 }
 
-async function prepareCluster(
+type PrepareClusterEvent =
+  | {
+      type: "creating-cluster";
+      name: string;
+    }
+  | {
+      type: "initializing-cluster";
+    }
+  | {
+      type: "connecting-cluster";
+    }
+  | {
+      type: "created-cluster";
+    };
+
+async function* prepareClusterStreamed(
   { name, projectId }: { name: string; projectId: number },
   settings: TiDBCloudSettings,
-) {
+): AsyncGenerator<PrepareClusterEvent> {
   const rootPassword = randomUUID();
+
+  yield { type: "creating-cluster", name };
 
   // Create and wait for the cluster to be active
   let cluster = await createCluster(
@@ -197,6 +246,8 @@ async function prepareCluster(
     },
     { id: projectId },
   );
+
+  yield { type: "initializing-cluster" };
 
   while (true) {
     if (cluster.state !== "CREATING") {
@@ -218,6 +269,8 @@ async function prepareCluster(
   const baseConnectionUrl = `https://${cluster.userPrefix}.root:${rootPassword}@${process.env.TIDB_CLOUD_DATABASE_ENDPOINT!}:4000`;
   const databaseConnectionUrl = `${baseConnectionUrl}/${database}`;
 
+  yield { type: "connecting-cluster" };
+
   // Create the default database
   const clusterDb = connect({
     url: baseConnectionUrl,
@@ -232,9 +285,20 @@ async function prepareCluster(
     },
     { id: projectId },
   );
+
+  yield { type: "created-cluster" };
 }
 
-async function prepareVercelProject(
+export type PrepareVercelProjectEvent =
+  | {
+      type: "creating-vercel-project";
+      name: string;
+    }
+  | {
+      type: "created-vercel-project";
+    };
+
+async function* prepareVercelProjectStreamed(
   {
     name,
     projectId,
@@ -249,7 +313,7 @@ async function prepareVercelProject(
     githubRepo: string;
   },
   settings: Record<"vercel_token", string>,
-) {
+): AsyncGenerator<PrepareVercelProjectEvent> {
   const cli = getVercelClient(settings.vercel_token);
 
   // Create the Vercel project
@@ -261,6 +325,7 @@ async function prepareVercelProject(
     },
   });
   const signal = AbortSignal.timeout(10000);
+  yield { type: "creating-vercel-project", name };
 
   // poll vercel project state
   while (true) {
@@ -292,7 +357,6 @@ async function prepareVercelProject(
     }
   }
 
-  // TODO Install github app
   await update(
     db,
     "project",
@@ -302,4 +366,6 @@ async function prepareVercelProject(
     },
     { id: projectId },
   );
+
+  yield { type: "created-vercel-project" };
 }

@@ -3,10 +3,23 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import type { UISessionData } from "@/app/(customer)/s/[slug]/query";
+import type { UISessionMessageChunk } from "@/prompts/ui-session";
 
 export function Reloader({ session }: { session: UISessionData }) {
   const router = useRouter();
   useEffect(() => {
+    if (!Array.isArray(session.logs)) {
+      return;
+    }
+
+    if (
+      session.logs.some((item) => {
+        return (item as UISessionMessageChunk).type === "error";
+      })
+    ) {
+      return;
+    }
+
     let shouldReload = false;
     let interval = 1000;
 

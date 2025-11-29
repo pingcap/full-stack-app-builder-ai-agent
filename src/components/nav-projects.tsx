@@ -70,7 +70,7 @@ export function NavProjects({
           <SidebarMenuItem key={item.id}>
             <SidebarMenuButton asChild isActive={slug === item.slug}>
               <Link href={`/s/${encodeURIComponent(item.slug)}`}>
-                <span>{capitalCase(item.slug)}</span>
+                <span>{item.title || capitalCase(item.slug)}</span>
               </Link>
             </SidebarMenuButton>
             <DropdownMenu>
@@ -95,7 +95,7 @@ export function NavProjects({
                   <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle>
-                        Are you sure to delete {item.slug}?
+                        Are you sure to delete {item.title}?
                       </AlertDialogTitle>
                       <AlertDialogDescription>
                         This will delete github repo, vercel project and
@@ -105,19 +105,19 @@ export function NavProjects({
                     <AlertDialogFooter>
                       <AlertDialogAction
                         onClick={() => {
-                          const id = toast.loading(`Deleting ${item.slug}`);
+                          const id = toast.loading(`Deleting ${item.title}`);
                           fetch(`/api/v1/projects/${item.project_id}`, {
                             method: "DELETE",
                           })
                             .then(handleFetchResponseError)
                             .then(() => {
                               toast.dismiss(id);
-                              toast.success(`Deleted ${item.slug}.`);
+                              toast.success(`Deleted ${item.title}.`);
                               router.refresh();
                             })
                             .catch((err) => {
                               toast.dismiss(id);
-                              toast.error(`Failed to delete ${item.slug}`, {
+                              toast.error(`Failed to delete ${item.title}`, {
                                 description: getErrorMessage(err),
                               });
                             });

@@ -1,7 +1,10 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { after, type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createProject } from "@/actions/projects";
-import { omit } from "@/lib/kysely-utils";
+import { createProjectStreamed } from "@/actions/projects";
+import { consumeAsyncIterator } from "@/lib/async-generators";
+import db from "@/lib/db/db";
+import { getErrorMessage } from "@/lib/errors";
+import { get, omit } from "@/lib/kysely-utils";
 
 const requestSchema = z.object({
   name: z
@@ -19,11 +22,32 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const data = requestSchema.parse(body);
 
-  const project = await createProject({
-    ...data,
-  });
+  const iter = createProjectStreamed(data);
 
-  return NextResponse.json(
-    omit(project, ["tidbcloud_connection_url", "tidbcloud_cluster_id"]),
-  );
+  try {
+    for await (const chunk of iter) {
+      if (chunk.type === "created-db-project") {
+        after(consumeAsyncIterator(iter));
+        return NextResponse.json(
+          omit(await get(db, "project", { id: chunk.id }), [
+            "tidbcloud_connection_url",
+          ]),
+        );
+      }
+    }
+    return NextResponse.json(
+      {
+        message:
+          "Failed to create project. Please check the logs for more details.",
+      },
+      { status: 400 },
+    );
+  } catch (e) {
+    return NextResponse.json(
+      {
+        message: getErrorMessage(e),
+      },
+      { status: 400 },
+    );
+  }
 }

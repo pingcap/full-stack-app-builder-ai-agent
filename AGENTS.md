@@ -11,8 +11,15 @@ Next.js App Router screens live in `src/app`, with each route folder owning its 
 - `npm run format`: Applies Biome formatting in place; run before committing.
 - `npm run migrate:init|up|down`: Executes the Kysely/TiDB migration script in `scripts/`.
 
+## Tech Stack & Libraries
+- Runtime: Next.js App Router (v16) on React 19 with TypeScript 5 ESM; strict mode stays on (`tsconfig.json` sets `strict: true`, `moduleResolution: bundler`).
+- Styling: Tailwind CSS v4 via `@tailwindcss/postcss`; merge utilities with `tailwind-merge` and keep primitives in `src/components/ui` (Radix + shadcn patterns powered by `class-variance-authority`, `clsx`).
+- Data & state: TanStack Query for server data, TanStack React Form for inputs, Kysely against TiDB (`@tidbcloud/serverless`) with `kysely-codegen`-backed schemas; prefer `@/lib` clients and `src/actions` for server mutations.
+- Auth & sessions: `next-auth` with theme handling via `next-themes`; cache/session helpers live in `src/lib`.
+- AI & DX: Vercel AI SDK (`ai` + `@ai-sdk/openai`/`@anthropic-ai/sdk`) for model calls, shiki for syntax, framer-motion/motion for animation, xyflow/embla for canvas/flows, and Upstash Redis for lightweight persistence.
+
 ## Coding Style & Naming Conventions
-TypeScript + ESM are required. Use PascalCase for components (`BuilderPanel.tsx`), camelCase for hooks (`useBuilderStore.ts`), and kebab-case for utility files. Add `use client`/`use server` directives as the first statement when needed. Prefer Tailwind utility classes and consolidate repeated variants in `src/components/ui`. Imports should leverage the path aliases defined in `tsconfig.json`. Always run `npm run lint` followed by `npm run format`; never commit generated output.
+TypeScript + ESM are required. Use PascalCase for components (`BuilderPanel.tsx`), camelCase for hooks (`useBuilderStore.ts`), and kebab-case for utility files. Add `use client`/`use server` directives as the first statement when needed. Keep code type-safe (React 19 + TS strict), prefer `zod` schemas for validation, and colocate helpers with features. Use Tailwind utility classes; extract reusable variants with `class-variance-authority` under `src/components/ui`. Imports should leverage the `@/*` alias instead of long relative paths. Prefer `async`/`await` with server actions in `src/actions`, and keep React Query/TanStack Form hooks colocated with the components that consume them. Always run `npm run lint` followed by `npm run format`; never commit generated output.
 
 ## Testing Guidelines
 There is no automated harness yet, so document manual verification steps for every PR (builder canvas flow, migrations, auth). When adding tests, colocate them as `*.test.ts(x)` siblings, use React Testing Library with Vitest (preferred stack), and aim for ≥80 % line coverage on new or changed modules. Exercise migration updates against a disposable TiDB instance via `npm run migrate:up` before review.

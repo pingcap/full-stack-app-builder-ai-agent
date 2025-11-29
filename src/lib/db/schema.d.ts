@@ -87,9 +87,12 @@ export interface TidbcloudBranch {
 export interface UiSession {
   created_at: Date;
   id: Generated<number>;
-  project_id: number;
+  logs: Json;
+  message: Json | null;
+  project_id: number | null;
   slug: string;
-  task_id: number;
+  task_id: number | null;
+  title: string;
   updated_at: Date;
   user_id: number;
 }

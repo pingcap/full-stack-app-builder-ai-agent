@@ -11,6 +11,7 @@ import {
 } from "@/app/(customer)/s/[slug]/preview-index-provider";
 import { getSessionData } from "@/app/(customer)/s/[slug]/query";
 import { Reloader } from "@/app/(customer)/s/[slug]/reloader";
+import { SessionPrepareState } from "@/app/(customer)/s/[slug]/session-prepare-state";
 import { SessionProjectLinks } from "@/app/(customer)/s/[slug]/session-project-links";
 import { SessionTaskRevisionPreview } from "@/app/(customer)/s/[slug]/task-revision-preview";
 import {
@@ -43,9 +44,9 @@ export default async function SessionPage({
   const slug = decodeURIComponent((await params).slug);
 
   const session = await getSessionData(slug);
-  const projectDisplayName = capitalCase(
-    (session.project?.name ?? "").replace(/-[^-]+$/, ""),
-  );
+  const projectDisplayName =
+    session.title ||
+    capitalCase((session.project?.name ?? "").replace(/-[^-]+$/, ""));
 
   return (
     <PreviewIndexProvider session={session}>
@@ -64,6 +65,7 @@ export default async function SessionPage({
           <div className="flex-1 overflow-hidden">
             <Conversation className="size-full">
               <ConversationContent>
+                <SessionPrepareState session={session} />
                 {session.task_revisions.map(
                   (task_revision, task_revision_index) => (
                     <Fragment key={task_revision.id}>
