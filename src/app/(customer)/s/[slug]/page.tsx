@@ -1,7 +1,8 @@
 import type { ChatStatus } from "ai";
 import { capitalCase } from "change-case";
 import { CodeIcon, ListTodo } from "lucide-react";
-import { Fragment, Suspense } from "react";
+import type { Metadata } from "next";
+import { cache, Fragment, Suspense } from "react";
 import { SessionConversationInput } from "@/app/(customer)/s/[slug]/conversation-input";
 import { MessageOverview } from "@/app/(customer)/s/[slug]/message-overview";
 import { MessagePreview } from "@/app/(customer)/s/[slug]/message-preview";
@@ -37,6 +38,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
+const cachedGetSessionData = cache(getSessionData);
+
 export default async function SessionPage({
   params,
 }: {
@@ -44,7 +47,7 @@ export default async function SessionPage({
 }) {
   const slug = decodeURIComponent((await params).slug);
 
-  const session = await getSessionData(slug);
+  const session = await cachedGetSessionData(slug);
   const projectDisplayName =
     session.title ||
     capitalCase((session.project?.name ?? "").replace(/-[^-]+$/, ""));
@@ -188,4 +191,16 @@ export default async function SessionPage({
   }
 }
 
-export const revalidate = 5;
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const slug = decodeURIComponent((await params).slug);
+
+  const session = await cachedGetSessionData(slug);
+
+  return {
+    title: `${session.title || session.slug} | Full-Stack App-Builder AI Agent`,
+  };
+}
