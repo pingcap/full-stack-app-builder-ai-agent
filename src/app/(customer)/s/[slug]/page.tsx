@@ -1,3 +1,4 @@
+import type { ChatStatus } from "ai";
 import { capitalCase } from "change-case";
 import { CodeIcon, ListTodo } from "lucide-react";
 import { Fragment, Suspense } from "react";
@@ -48,6 +49,17 @@ export default async function SessionPage({
     session.title ||
     capitalCase((session.project?.name ?? "").replace(/-[^-]+$/, ""));
 
+  const chatStatus: ChatStatus =
+    session.task_revisions.length === 0
+      ? "submitted"
+      : session.task_revisions[session.task_revisions.length - 1].status ===
+          "finished"
+        ? "ready"
+        : session.task_revisions[session.task_revisions.length - 1].status ===
+            "interrupted"
+          ? "error"
+          : "streaming";
+
   return (
     <PreviewIndexProvider session={session}>
       <div className="size-full overflow-hidden grid grid-cols-2 gap-4">
@@ -69,8 +81,8 @@ export default async function SessionPage({
                 {session.task_revisions.map(
                   (task_revision, task_revision_index) => (
                     <Fragment key={task_revision.id}>
-                      <Message from="user">
-                        <MessageContent>
+                      <Message from="user" className="overflow-x-hidden">
+                        <MessageContent className="max-w-full overflow-x-hidden">
                           <AutoCollapse collapseThresholdHeight={144}>
                             <MessageResponse>
                               {task_revision.user_prompt}
@@ -116,22 +128,15 @@ export default async function SessionPage({
             <SessionConversationInput
               projectId={session.project_id}
               taskId={session.task_id}
-              status={
-                session.task_revisions.length === 0
-                  ? "submitted"
-                  : session.task_revisions[session.task_revisions.length - 1]
-                        .status === "finished"
-                    ? "ready"
-                    : session.task_revisions[session.task_revisions.length - 1]
-                          .status === "interrupted"
-                      ? "error"
-                      : "streaming"
-              }
+              status={chatStatus}
             />
           </div>
         </div>
-        <div className="size-full p-4">
-          <SessionTaskRevisionPreview session={session} />
+        <div className="size-full p-4 overflow-hidden">
+          <SessionTaskRevisionPreview
+            session={session}
+            chatStatus={chatStatus}
+          />
         </div>
       </div>
     </PreviewIndexProvider>

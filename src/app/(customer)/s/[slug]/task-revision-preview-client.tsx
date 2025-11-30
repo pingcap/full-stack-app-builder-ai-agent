@@ -36,15 +36,15 @@ export function TaskRevisionPreviewClient({
   const size = useSize(navigationContainerElement);
 
   return (
-    <WebPreview className="size-full" defaultUrl={url}>
+    <WebPreview className="size-full overflow-hidden" defaultUrl={url}>
       <WebPreviewNavigation ref={setNavigationContainerElement}>
         <Select
           value={String(index)}
           onValueChange={(index) => setPreviewIndex(parseInt(index))}
         >
           <SelectTrigger className="max-w-[180px] w-full" size="sm">
-            <div className=" overflow-hidden whitespace-nowrap text-ellipsis">
-              <SelectValue />
+            <div className="overflow-hidden whitespace-nowrap text-ellipsis">
+              {checkpoints[index]?.name}
             </div>
           </SelectTrigger>
           <SelectContent
@@ -56,7 +56,7 @@ export function TaskRevisionPreviewClient({
                 key={checkpoint.index}
                 value={String(checkpoint.index)}
               >
-                {checkpoint.name}
+                <div className="size-full line-clamp-3">{checkpoint.name}</div>
               </SelectItem>
             ))}
           </SelectContent>
@@ -87,8 +87,10 @@ export function TaskRevisionPreviewClient({
         </WebPreviewNavigationButton>
       </WebPreviewNavigation>
       {error != null ? (
-        <div className="size-full p-4 flex items-center justify-center">
-          {error}
+        <div className="flex-1 w-full overflow-hidden">
+          <div className="size-full p-4 flex items-center justify-center flex-col gap-4">
+            {error}
+          </div>
         </div>
       ) : (
         <WebPreviewBody

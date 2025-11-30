@@ -41,6 +41,7 @@
     "@vercel/sdk": "^1.17.5",
     "@xyflow/react": "^12.9.3",
     "ai": "^6.0.0-beta.118",
+    "ansicolor": "^2.0.3",
     "bcrypt": "^6.0.0",
     "change-case": "^5.4.4",
     "class-variance-authority": "^0.7.1",

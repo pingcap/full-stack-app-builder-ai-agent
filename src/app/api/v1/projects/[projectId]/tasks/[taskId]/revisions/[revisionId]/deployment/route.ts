@@ -156,5 +156,14 @@ export async function GET(
     idOrUrl: taskRevision.vercel_deployment_id,
   });
 
+  if (deployment.readyState === "ERROR") {
+    const events = await vercel.deployments.getDeploymentEvents({
+      teamId: project.vercel_team_id,
+      idOrUrl: taskRevision.vercel_deployment_id,
+      limit: -1,
+    });
+    Object.assign(deployment, { events });
+  }
+
   return NextResponse.json(deployment);
 }
