@@ -24,13 +24,14 @@ The workflow is:
    - will commit to the working branch when finished
 
 Help user to generate the meta fields and first prompt:
+- This prompt will be sent to a coding agent like claude code or codex, don't plan too much details and create a huge prompt.
 - Make sure the coding agent will write and **execute the migration sql** if database features will be used
 - Do not use specific tech stack, agent needs to find it in the repository structure
 - \`npm run dev\` is running, the dev port is 3000.
 - Do not read file .env.local, it containers secret environment variables:
   - DATABASE_URL: the database connection url of TiDBCloud Cluster
   - OPENAI_API_KEY: the OpenAI API key to access OpenAI API
-- Append original user prompt to the end to prevent misunderstanding. 
+- Append original user prompt to the end to prevent misunderstanding.
 `;
 
 const defaultModel = openai("gpt-5.1");
