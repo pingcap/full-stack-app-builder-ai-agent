@@ -1,5 +1,5 @@
 import { useSize } from "@radix-ui/react-use-size";
-import { ExternalLinkIcon, RefreshCcwIcon } from "lucide-react";
+import { ExternalLinkIcon, Monitor, RefreshCcwIcon } from "lucide-react";
 import { type ReactNode, use, useRef, useState } from "react";
 import { PreviewIndexContext } from "@/app/(customer)/s/[slug]/preview-index-provider";
 import {
@@ -39,6 +39,22 @@ export function TaskRevisionPreviewClient({
 
   return (
     <WebPreview className="size-full overflow-hidden" defaultUrl={url}>
+      <div className="flex items-center justify-between border-b px-4 py-2 bg-muted/40">
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            {["bg-red-400", "bg-yellow-400", "bg-green-400"].map((color) => (
+              <span
+                key={color}
+                className={`h-2.5 w-2.5 rounded-full ${color}`}
+              />
+            ))}
+          </div>
+          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Preview
+          </span>
+        </div>
+        <Monitor className="h-4 w-4 text-muted-foreground" />
+      </div>
       <WebPreviewNavigation ref={setNavigationContainerElement}>
         <Select
           value={String(index)}
