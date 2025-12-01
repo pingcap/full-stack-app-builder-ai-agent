@@ -22,6 +22,9 @@ The workflow is:
    - will create a tidbcloud cluster branch and setup env variables in env file
    - will run coding agent (like codex, claude code to write codes)
    - will commit to the working branch when finished
+   - do not read file .env.local, it containers secret environment variables:
+      - DATABASE_URL: the database connection url of TiDBCloud Cluster
+      - OPENAI_API_KEY: the OpenAI API key to access OpenAI API
 
 Help user to generate the meta fields and first prompt:
 - Make sure the coding agent will write and **execute the migration sql** if database features will be used

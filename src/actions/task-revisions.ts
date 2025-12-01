@@ -70,7 +70,7 @@ export async function createTaskRevision(params: CreateTaskRevisionParams) {
         {
           path: ".env.local",
           content: Buffer.from(
-            `DATABASE_URL=${branch.connection_url}\n`,
+            `DATABASE_URL=${branch.connection_url}\nOPENAI_API_KEY=${settings?.openai_api_key ?? ''}\n`,
             "utf-8",
           ),
         },

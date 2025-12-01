@@ -2,6 +2,7 @@ import { Vercel } from "@vercel/sdk";
 import type { CreateCustomEnvironmentResponseBody } from "@vercel/sdk/models/createcustomenvironmentop";
 import type { GetCustomEnvironmentResponseBody } from "@vercel/sdk/models/getcustomenvironmentop";
 import { type NextRequest, NextResponse } from "next/server";
+import { getSessionUserSettings } from "@/lib/auth";
 import db from "@/lib/db/db";
 import { get, update } from "@/lib/kysely-utils";
 
@@ -13,6 +14,14 @@ export async function POST(
     params: Promise<{ projectId: string; taskId: string; revisionId: string }>;
   },
 ) {
+  const settings = await getSessionUserSettings();
+
+  if (!settings) {
+    return NextResponse.json({
+      message: "Please login first.",
+    });
+  }
+
   const projectId = parseInt(decodeURIComponent((await params).projectId), 10);
   const taskId = parseInt(decodeURIComponent((await params).taskId), 10);
   const taskRevisionId = parseInt(
@@ -79,6 +88,19 @@ export async function POST(
     requestBody: {
       key: "DATABASE_URL",
       value: branch.connection_url,
+      customEnvironmentIds: [env.id],
+      target: [],
+      type: "encrypted",
+    },
+  });
+
+  await vercel.projects.createProjectEnv({
+    teamId: project.vercel_team_id,
+    idOrName: project.vercel_project_id,
+    upsert: "true",
+    requestBody: {
+      key: "OPENAI_API_KEY",
+      value: settings?.openai_api_key ?? "",
       customEnvironmentIds: [env.id],
       target: [],
       type: "encrypted",

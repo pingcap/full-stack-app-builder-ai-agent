@@ -109,6 +109,7 @@ export interface UserSetting {
   default_vercel_project_team_id: string | null;
   github_login: string | null;
   github_token: string | null;
+  openai_api_key: string | null;
   tidbcloud_organization_id: string | null;
   tidbcloud_private_key: string | null;
   tidbcloud_project_id: string | null;
