@@ -142,6 +142,16 @@ export default function Page() {
                 </PromptInputFooter>
               </PromptInput>
             </PromptInputProvider>
+            <p className="text-sm text-muted-foreground">
+              <a
+                className="underline underline-offset-2 hover:text-foreground"
+                href="https://github.com/pingcap/full-stack-app-builder-ai-agent"
+                target="_blank"
+                rel="noreferrer"
+              >
+                View the source on GitHub
+              </a>
+            </p>
           </div>
         </div>
       </div>
