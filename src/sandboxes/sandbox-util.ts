@@ -92,7 +92,6 @@ npm i -g ${coding_agent_type === "codex" ? "@openai/codex" : ""} ${coding_agent_
 ${coding_agent_type === "claude" ? "curl -fsSL https://claude.ai/install.sh | bash" : ""}
 
 echo Installing MCPs
-npx playwright install chrome
 
 cd /vercel/sandbox
 
@@ -100,7 +99,6 @@ ${
   coding_agent_type === "codex"
     ? `
 codex mcp add nextjs-devtools npx -y "next-devtools-mcp@latest"
-codex mcp add playwright-devtools npx -y "@playwright/mcp@latest"
 codex mcp add shadcn npx -y "shadcn@latest" "mcp"
 `
     : ""
@@ -109,7 +107,6 @@ ${
   coding_agent_type === "claude"
     ? `
 claude mcp add nextjs-devtools npx -- -y "next-devtools-mcp@latest"
-claude mcp add playwright-devtools npx -- -y "@playwright/mcp@latest"
 claude mcp add shadcn npx -- -y "shadcn@latest" "mcp"
 `
     : ""
