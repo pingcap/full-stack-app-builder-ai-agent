@@ -42,7 +42,7 @@ export function SessionPrepareState({ session }: { session: UISessionData }) {
       message: defaultMessage(session.id),
     });
 
-    (async () => {
+    const readerTask = (async () => {
       try {
         let lastMessage = defaultMessage(session.id);
         for await (const message of reader) {
@@ -54,7 +54,9 @@ export function SessionPrepareState({ session }: { session: UISessionData }) {
     })();
 
     return () => {
-      reader.cancel();
+      readerTask.catch(() => {
+        reader.cancel().catch(() => {});
+      });
     };
   }, [session]);
 
