@@ -71,14 +71,6 @@ base_url = "https://cr-tokyo.breeswish.org/openai"
 wire_api = "responses"
 requires_openai_auth = true
 env_key = "CRS_OAI_KEY"
-
-[mcp_servers.playwright]
-command = "npx"
-args = ["@playwright/mcp@latest"]
-
-[mcp_servers.nextjs_devtools]
-command = "npx"
-args = ["-y", "next-devtools-mcp@latest"]
 '
 
 CODEX_AUTH_JSON='
@@ -98,6 +90,27 @@ echo "$CODEX_AUTH_JSON" > ~/.codex/auth.json
 echo Installing tools
 npm i -g ${coding_agent_type === "codex" ? "@openai/codex" : ""} ${coding_agent_type === "claude" ? "@openai/codex " : ""}code-tee vercel
 ${coding_agent_type === "claude" ? "curl -fsSL https://claude.ai/install.sh | bash" : ""}
+
+echo Installing MCPs
+${
+  coding_agent_type === "codex"
+    ? `
+codex mcp add nextjs-devtools npx -y "next-devtools-mcp@latest"
+codex mcp add playwright-devtools npx -y "@playwright/mcp@latest"
+codex mcp add shadcn npx -y "shadcn@latest" "mcp"
+`
+    : ""
+}
+${
+  coding_agent_type === "claude"
+    ? `
+claude mcp add nextjs-devtools npx -- -y "next-devtools-mcp@latest"
+claude mcp add playwright-devtools npx -- -y "@playwright/mcp@latest"
+claude mcp add shadcn npx -- -y "shadcn@latest" "mcp"
+`
+    : ""
+}
+
 
 PACKAGE_JSON="$(npm prefix)/package.json"
 
