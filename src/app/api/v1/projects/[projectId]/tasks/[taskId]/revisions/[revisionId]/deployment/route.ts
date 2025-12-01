@@ -85,26 +85,22 @@ export async function POST(
     teamId: project.vercel_team_id,
     idOrName: project.vercel_project_id,
     upsert: "true",
-    requestBody: {
-      key: "DATABASE_URL",
-      value: branch.connection_url,
-      customEnvironmentIds: [env.id],
-      target: [],
-      type: "encrypted",
-    },
-  });
-
-  await vercel.projects.createProjectEnv({
-    teamId: project.vercel_team_id,
-    idOrName: project.vercel_project_id,
-    upsert: "true",
-    requestBody: {
-      key: "OPENAI_API_KEY",
-      value: settings?.openai_api_key ?? "",
-      customEnvironmentIds: [env.id],
-      target: [],
-      type: "encrypted",
-    },
+    requestBody: [
+      {
+        key: "DATABASE_URL",
+        value: branch.connection_url,
+        customEnvironmentIds: [env.id],
+        target: [],
+        type: "encrypted",
+      },
+      {
+        key: "OPENAI_API_KEY",
+        value: settings?.openai_api_key ?? "",
+        customEnvironmentIds: [env.id],
+        target: [],
+        type: "encrypted",
+      },
+    ],
   });
 
   const deployment = await vercel.deployments.createDeployment({
