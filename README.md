@@ -85,10 +85,6 @@ async function createBranch(clusterId, displayName, publicKey, privateKey) {
   - `DATABASE_URL`
   - `OPENAI_API_KEY`
   - `TIDB_CLOUD_REGION`, `TIDB_CLOUD_DATABASE_ENDPOINT`
-  - `STREAM_PROXY_URL`
-  - `HOOK_AUTH_TOKEN`, `HOOK_BASE_URL` (defaults to `https://${VERCEL_URL}`)
-  - `BCRYPT_SALT`
-  - Optional: `VERCEL_URL` when running on Vercel.
 
 ## Setup
 ```bash
