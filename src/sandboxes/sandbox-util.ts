@@ -92,6 +92,8 @@ npm i -g ${coding_agent_type === "codex" ? "@openai/codex" : ""} ${coding_agent_
 ${coding_agent_type === "claude" ? "curl -fsSL https://claude.ai/install.sh | bash" : ""}
 
 echo Installing MCPs
+cd /vercel/sandbox
+
 ${
   coding_agent_type === "codex"
     ? `
