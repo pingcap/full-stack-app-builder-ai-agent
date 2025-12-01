@@ -74,16 +74,23 @@ export default function Page() {
         }}
       />
       <div className="relative h-full w-full flex items-center justify-center px-4">
-        <div className="w-full max-w-xl space-y-3 text-center">
+        <div className="w-full max-w-xl space-y-3 text-center -mt-10">
           <div className="space-y-2">
+            <div className="flex justify-center">
+              <img
+                src="/TiDB-Logo-w-Tagline-Full-Pos-RGB.svg"
+                alt="TiDB Logo"
+                className="h-20 w-auto"
+              />
+            </div>
             <h1 className="text-2xl font-semibold">
               Full-Stack App-Builder AI Agent
             </h1>
             <p className="text-muted-foreground text-sm">
               Think of this as a lean, self-hostable cousin of
               Lovable.dev—describe an app, watch Codex (gpt-5.1-codex) and
-              Claude Code (claude-sonnet-4.5) plus TiDB Cloud, Vercel, and
-              GitHub build, test, and deploy it automatically.
+              Claude Code (via AWS Bedrock claude-sonnet) plus TiDB Cloud,
+              Vercel, and GitHub build, test, and deploy it automatically.
             </p>
           </div>
           <div className="mx-auto w-full max-w-[480px] space-y-4">
