@@ -2,12 +2,18 @@
   <img alt="TiDB Cloud" src="./public/TiDB-Logo-w-Tagline-Full-Pos-RGB.svg" width="360" />
 </p>
 
-# Full-Stack App Builder AI Agent
+# How to Build an AI Agent that Builds Full-Stack Apps
+An open-source starter kit using TiDB Cloud, Vercel, Kysely, and GitHub. Think of this as a minimal, self-hostable cousin of [Lovable.dev](https://lovable.dev/) that you fully own and control.
 
-> Think of this as a lean, self-hostable cousin of [Lovable.dev](https://lovable.dev/)—describe an app, watch [Codex (gpt-5.1-codex)](https://openai.com/codex/) and [Claude Code (claude-sonnet-4.5)](https://www.claude.com/product/claude-code) plus [TiDB Cloud](https://www.pingcap.com/tidb/cloud/), Vercel, and [GitHub](https://github.com/) build, test, and deploy it automatically.
+> Describe an app and this agent provisions GitHub + TiDB Cloud + Vercel, codes with [Codex (gpt-5.1-codex)](https://openai.com/codex/) and [Claude Code (claude-sonnet-4.5)](https://www.claude.com/product/claude-code), tests, deploys, and streams the whole session. The code is public at https://github.com/pingcap/full-stack-app-builder-ai-agent.
 
-## Overview
-Imagine describing an app in chat and watching an agent ship it live. This repository hosts that control plane: operators log in with NextAuth, paste a prompt, and the agent provisions GitHub repos, TiDB Cloud branches, Vercel projects + sandboxes, runs Codex through `code-tee`, commits, deploys, and streams transcripts in `/s/:slug`. The stack blends Next.js App Router, shadcn/ui, Tailwind CSS v4, TanStack React Query/Form, Vercel AI SDK, and [Kysely](https://kysely.dev/) so every step—auth, orchestration, execution, visualization—lives in one place. TiDB Cloud sits at the center, acting as both the control-plane database and the per-app, branchable datastore that keeps schema changes isolated yet resumable.
+## What This Agent Can Do
+- Generate complete web apps from a prompt (Next.js 16 + shadcn/Tailwind).
+- Provision TiDB Cloud clusters/branches per project and per instruction.
+- Track versions so code, schema, and credentials stay aligned.
+- Run and preview apps instantly via Vercel sandboxes and previews.
+- Keep conversational context between generations for iterative refinement.
+- Scale down idle environments with TiDB Cloud serverless.
 
 ## Architecture Overview
 
@@ -15,37 +21,24 @@ Imagine describing an app in chat and watching an agent ship it live. This repos
   <img alt="Architecture Overview: Full-Stack App-Builder AI Agent" src="./public/architecture.png" width="720" />
 </p>
 
-## Key Capabilities
-- **Resource orchestration** – `src/actions/projects.ts` provisions GitHub repos from the `634750802/nextjs-tidbcloud-serverless-kysely-template`, creates TiDB Cloud clusters/branches via the serverless API, and registers Vercel projects/team tokens per user.
-- **Autonomous coding sessions** – Each `task_revision` (see `migrations/000-first.ts`) spawns a TiDB branch and a Vercel sandbox, writes secrets into `.env.local`, launches `npm run dev`, runs `code-tee codex ...`, pushes commits back to GitHub, uploads Codex traces to Vercel Blob Storage, and reports completion through the webhook at `src/app/hooks/v1/sandboxes/[sandboxId]/route.ts`.
-- **Session and streaming UI** – `/s/[slug]` renders longitudinal conversations using AI UI components, reads live message streams via the `STREAM_PROXY_URL` endpoints, and lets reviewers inspect agent output, commits, and branch previews.
-- **Protected workspace** – `src/proxy.ts` wraps protected routes with NextAuth middleware so only credentialed operators reach `/projects`, `/settings`, API v1 endpoints, or the customer preview slug.
+- **Server actions** (`src/actions/*`) orchestrate GitHub, TiDB Cloud, and Vercel resources.
+- **Sandboxes** (`src/sandboxes/*`) launch per-task runtimes, run `npm run dev`, and report via `src/app/hooks/v1/sandboxes/[sandboxId]/route.ts`.
+- **Session UI** (`src/app/(customer)/s/[slug]`) streams logs, checkpoints, and deploy links.
+- **Auth & protection** (`src/proxy.ts`, `src/lib/auth*`) gate `/projects`, `/settings`, and API v1 routes.
 
-## How It Works: End-to-End Flow
-### Control Plane Credentials
-Before the agent codes, operators configure:
-- **GitHub token** – create repos, push commits, manage branches.
-- **Vercel token** – issue Blob storage credentials and start sandboxes.
-- **Codex (gpt-5.1-codex) + Claude Code (claude-sonnet-4.5)** – reasoning + code generation.
-- **TiDB Cloud API keys** – spawn clusters, branches, and per-app databases.
-
-These credentials wire infrastructure, code, and data into a single orchestrated loop.
-
-### Agent Workflow
-1. **Prompt** – “Build a todo app with auth and migrations.”
-2. **Plan** – Codex (via `code-tee`) infers architecture, stack, and dependencies from the repo context.
-3. **Provision** – `createProject` ensures TiDB Cloud cluster/branch, GitHub repo, and Vercel project/token exist; `createSandbox` and `createTiDBCloudBranch` ready per-task environments.
-4. **Generate** – Codex streams code edits, test hooks, and UI copy while Next.js surfaces live transcripts.
-5. **Migrate** – Kysely migrations run inside the sandbox against the TiDB branch so schema changes match each revision.
-6. **Deploy** – Commits push to GitHub and trigger Vercel previews tied to that branch + database.
-7. **Iterate** – Reviewers chat in `/s/:slug`, triggering new `task_revision`s that reuse prior branches and context.
+## How It Works (End-to-End)
+1. **Prompt** – “Build a todo app.”  
+2. **Plan** – Model drafts an execution plan.  
+3. **Provision** – Create TiDB cluster/branch, Vercel sandbox, GitHub repo/branch, and env vars.  
+4. **Generate** – Codex/Claude Code writes app code, Kysely schema, and migrations.  
+5. **Migrate** – Run typed migrations against the TiDB branch.  
+6. **Deploy** – Commit to GitHub and trigger a Vercel preview.  
+7. **Iterate** – Follow-up prompts (e.g., “Add a username field”) spawn new TiDB branches and code revisions, keeping everything reversible.
 
 ## Magic Features
-Where TiDB Cloud + Vercel + Codex snap together:
-- **Checkpointing & Versioning** – TiDB branches mirror Git branches so database state rolls forward/back just like code.
-- **Schema migrations via Kysely** – typed SQL builders keep Next.js Server Actions honest and portable.
-- **Versioned secrets** – Env material gets stored via user settings (TiDB) and pushed into sandboxes on demand.
-- **Scale-to-zero infra** – TiDB Cloud serverless and Vercel sandboxes spin down when idle, perfect for bursty agent workloads.
+- **Checkpointed versions** – Git branches map to TiDB branches for perfect code–data sync.
+- **Type-safe migrations** – Kysely migrations keep schema evolution safe and reversible.
+- **Scale-to-zero** – TiDB Cloud serverless + Vercel sandboxes support many isolated environments without idle cost.
 
 ```ts
 // TiDB Cloud branch creation (simplified)
@@ -87,11 +80,10 @@ async function createBranch(clusterId, displayName, publicKey, privateKey) {
 - TiDB Serverless account with API keys, organization/project IDs, region, and database endpoint.
 - GitHub account with access to install the required template and push commits via Personal Access Token.
 - Vercel team token with Blob Storage enabled.
-- OpenAI (or CRS) API key to drive Codex sessions and `code-tee`.
-- Stream proxy service that exposes `/v2/streams/:session`.
+- OpenAI (or CRS) API key to drive Codex sessions.
 - Required environment variables:
   - `DATABASE_URL`
-  - `OPENAI_API_KEY` (and `CRS_OAI_KEY` for `code-tee`)
+  - `OPENAI_API_KEY`
   - `TIDB_CLOUD_REGION`, `TIDB_CLOUD_DATABASE_ENDPOINT`
   - `STREAM_PROXY_URL`
   - `HOOK_AUTH_TOKEN`, `HOOK_BASE_URL` (defaults to `https://${VERCEL_URL}`)
