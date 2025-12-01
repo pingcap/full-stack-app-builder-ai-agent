@@ -18,8 +18,9 @@ import { cn } from "@/lib/utils";
 export function LoginForm({
   className,
   error,
+  callbackUrl,
   ...props
-}: ComponentProps<"div"> & { error?: string }) {
+}: ComponentProps<"div"> & { error?: string; callbackUrl?: string }) {
   const fetchingCsrfToken = useRef(false);
   const [csrfToken, setCsrfToken] = useState<string | undefined>(undefined);
 
@@ -43,6 +44,11 @@ export function LoginForm({
             {csrfToken && (
               <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
             )}
+            <input
+              name="callbackUrl"
+              type="hidden"
+              value={callbackUrl ?? "/"}
+            />
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Welcome back</h1>

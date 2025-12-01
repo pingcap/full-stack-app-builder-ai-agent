@@ -18,6 +18,7 @@ import {
 import type { DB } from "@/lib/db/schema";
 import type { Selectable } from "kysely";
 import { ChevronsUpDown, LogOut } from "lucide-react";
+import { signOut } from "next-auth/react";
 
 export function NavUser({
   user,
@@ -87,9 +88,17 @@ export function NavUser({
             {/*  </DropdownMenuItem>*/}
             {/*</DropdownMenuGroup>*/}
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOut />
-              Log out
+            <DropdownMenuItem asChild>
+              <button
+                type="button"
+                className="flex w-full items-center gap-2"
+                onClick={() => {
+                  void signOut({ callbackUrl: "/login", redirect: true });
+                }}
+              >
+                <LogOut />
+                Log out
+              </button>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
