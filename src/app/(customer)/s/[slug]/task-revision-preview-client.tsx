@@ -32,6 +32,8 @@ export function TaskRevisionPreviewClient({
     useState<HTMLDivElement | null>(null);
   const { setPreviewIndex } = use(PreviewIndexContext);
   const [iframeRef, setIframeRef] = useState<HTMLIFrameElement | null>(null);
+  const selectTriggerId = `task-revision-checkpoint-select-${index}`;
+  const selectContentId = `${selectTriggerId}-content`;
 
   const size = useSize(navigationContainerElement);
 
@@ -42,12 +44,18 @@ export function TaskRevisionPreviewClient({
           value={String(index)}
           onValueChange={(index) => setPreviewIndex(parseInt(index))}
         >
-          <SelectTrigger className="max-w-[180px] w-full" size="sm">
+          <SelectTrigger
+            id={selectTriggerId}
+            aria-controls={selectContentId}
+            className="max-w-[180px] w-full"
+            size="sm"
+          >
             <div className="overflow-hidden whitespace-nowrap text-ellipsis">
               {checkpoints[index]?.name}
             </div>
           </SelectTrigger>
           <SelectContent
+            id={selectContentId}
             style={{ width: size?.width ? size.width - 16 : 180 }}
             align="start"
           >
