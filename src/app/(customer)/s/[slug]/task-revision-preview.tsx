@@ -8,6 +8,7 @@ import type { ChatStatus } from "ai";
 import { strip } from "ansicolor";
 import chalk from "chalk";
 import { AlertCircleIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { use, useMemo, useTransition } from "react";
 import { PreviewIndexContext } from "@/app/(customer)/s/[slug]/preview-index-provider";
 import type { UISessionData } from "@/app/(customer)/s/[slug]/query";
@@ -25,6 +26,7 @@ export function SessionTaskRevisionPreview({
   session: UISessionData;
 }) {
   const { previewIndex } = use(PreviewIndexContext);
+  const router = useRouter();
   const [transitioning, startTransition] = useTransition();
 
   const revision = session.task_revisions[previewIndex];
@@ -192,6 +194,9 @@ Help me to fix the bugs.
                                 }),
                               },
                             ).then(handleFetchResponseError);
+                            startTransition(() => {
+                              router.refresh();
+                            });
                           });
                         }}
                       >
