@@ -7,6 +7,7 @@ import {
   Folder,
   Forward,
   MoreHorizontal,
+  Plus,
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
@@ -63,90 +64,104 @@ export function NavProjects({
   const showToggle = sessions.length > 7;
 
   return (
-    <SidebarGroup>
-      <SidebarGroupLabel>Projects</SidebarGroupLabel>
-      <SidebarMenu>
-        {visibleSessions.map((item) => (
-          <SidebarMenuItem key={item.id}>
-            <SidebarMenuButton asChild isActive={slug === item.slug}>
-              <Link href={`/s/${encodeURIComponent(item.slug)}`}>
-                <span>{item.title || capitalCase(item.slug)}</span>
+    <>
+      <SidebarGroup className="pb-0">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild className="font-medium">
+              <Link href="/">
+                <Plus className="h-4 w-4" />
+                <span>New Project</span>
               </Link>
             </SidebarMenuButton>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuAction showOnHover>
-                  <MoreHorizontal />
-                  <span className="sr-only">More</span>
-                </SidebarMenuAction>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-48 rounded-lg"
-                side={isMobile ? "bottom" : "right"}
-                align={isMobile ? "end" : "start"}
-              >
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <DropdownMenuItem onSelect={(ev) => ev.preventDefault()}>
-                      <Trash2 className="text-muted-foreground" />
-                      <span>Delete Project</span>
-                    </DropdownMenuItem>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>
-                        Are you sure to delete {item.title}?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will delete github repo, vercel project and
-                        tidbcloud cluster.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogAction
-                        onClick={() => {
-                          const id = toast.loading(`Deleting ${item.title}`);
-                          fetch(`/api/v1/projects/${item.project_id}`, {
-                            method: "DELETE",
-                          })
-                            .then(handleFetchResponseError)
-                            .then(() => {
-                              toast.dismiss(id);
-                              toast.success(`Deleted ${item.title}.`);
-                              router.refresh();
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarGroup>
+      <SidebarGroup>
+        <SidebarGroupLabel>Projects</SidebarGroupLabel>
+        <SidebarMenu>
+          {visibleSessions.map((item) => (
+            <SidebarMenuItem key={item.id}>
+              <SidebarMenuButton asChild isActive={slug === item.slug}>
+                <Link href={`/s/${encodeURIComponent(item.slug)}`}>
+                  <span>{item.title || capitalCase(item.slug)}</span>
+                </Link>
+              </SidebarMenuButton>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuAction showOnHover>
+                    <MoreHorizontal />
+                    <span className="sr-only">More</span>
+                  </SidebarMenuAction>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  className="w-48 rounded-lg"
+                  side={isMobile ? "bottom" : "right"}
+                  align={isMobile ? "end" : "start"}
+                >
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <DropdownMenuItem onSelect={(ev) => ev.preventDefault()}>
+                        <Trash2 className="text-muted-foreground" />
+                        <span>Delete Project</span>
+                      </DropdownMenuItem>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          Are you sure to delete {item.title}?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will delete github repo, vercel project and
+                          tidbcloud cluster.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogAction
+                          onClick={() => {
+                            const id = toast.loading(`Deleting ${item.title}`);
+                            fetch(`/api/v1/projects/${item.project_id}`, {
+                              method: "DELETE",
                             })
-                            .catch((err) => {
-                              toast.dismiss(id);
-                              toast.error(`Failed to delete ${item.title}`, {
-                                description: getErrorMessage(err),
+                              .then(handleFetchResponseError)
+                              .then(() => {
+                                toast.dismiss(id);
+                                toast.success(`Deleted ${item.title}.`);
+                                router.refresh();
+                              })
+                              .catch((err) => {
+                                toast.dismiss(id);
+                                toast.error(`Failed to delete ${item.title}`, {
+                                  description: getErrorMessage(err),
+                                });
                               });
-                            });
-                        }}
-                        asChild
-                      >
-                        <Button variant="destructive">DELETE IT</Button>
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        ))}
-        {showToggle ? (
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              onClick={() => setShowAll((prev) => !prev)}
-              className="text-muted-foreground"
-            >
-              <span>{showAll ? "Show less" : "Show all"}</span>
-              <ChevronDown
-                className={`ml-auto h-4 w-4 transition-transform ${showAll ? "rotate-180" : ""}`}
-              />
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        ) : null}
-      </SidebarMenu>
-    </SidebarGroup>
+                          }}
+                          asChild
+                        >
+                          <Button variant="destructive">DELETE IT</Button>
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SidebarMenuItem>
+          ))}
+          {showToggle ? (
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => setShowAll((prev) => !prev)}
+                className="text-muted-foreground"
+              >
+                <span>{showAll ? "Show less" : "Show all"}</span>
+                <ChevronDown
+                  className={`ml-auto h-4 w-4 transition-transform ${showAll ? "rotate-180" : ""}`}
+                />
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ) : null}
+        </SidebarMenu>
+      </SidebarGroup>
+    </>
   );
 }
