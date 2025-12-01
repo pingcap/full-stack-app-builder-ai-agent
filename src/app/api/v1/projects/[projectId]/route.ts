@@ -1,4 +1,5 @@
 import { Vercel } from "@vercel/sdk";
+import { SDKError } from "@vercel/sdk/models/sdkerror";
 import type { Selectable } from "kysely";
 import { NextResponse } from "next/server";
 import { Octokit } from "octokit";
@@ -86,10 +87,16 @@ async function deleteVercelProject(project: Selectable<DB["project"]>) {
     bearerToken: project.vercel_team_token,
   });
 
-  await vercel.projects.deleteProject({
-    teamId: project.vercel_team_id,
-    idOrName: project.vercel_project_id,
-  });
+  try {
+    await vercel.projects.deleteProject({
+      teamId: project.vercel_team_id,
+      idOrName: project.vercel_project_id,
+    });
+  } catch (error) {
+    if (!isIgnorableVercelDeletionError(error)) {
+      throw error;
+    }
+  }
 
   await update(
     db,
@@ -101,6 +108,25 @@ async function deleteVercelProject(project: Selectable<DB["project"]>) {
     },
     { id: project.id },
   );
+}
+
+function isIgnorableVercelDeletionError(error: unknown) {
+  if (error instanceof SDKError) {
+    if (error.statusCode === 404) {
+      return true;
+    }
+
+    try {
+      const parsed = JSON.parse(error.body ?? "{}");
+      if (parsed?.error?.invalidToken || parsed?.error?.code === "forbidden") {
+        return true;
+      }
+    } catch {
+      // ignore parse issues
+    }
+  }
+
+  return false;
 }
 
 async function deleteTidbcloudCluster(project: Selectable<DB["project"]>) {

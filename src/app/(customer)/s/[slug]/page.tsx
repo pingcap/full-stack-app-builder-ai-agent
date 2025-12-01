@@ -65,9 +65,15 @@ export default async function SessionPage({
 
   return (
     <PreviewIndexProvider session={session}>
-      <div className="size-full overflow-hidden grid grid-cols-2 gap-4">
+      <div
+        className="size-full overflow-hidden grid grid-cols-2 gap-4"
+        suppressHydrationWarning
+      >
         <Reloader session={session} />
-        <div className="size-full p-4 overflow-hidden flex flex-col gap-4">
+        <div
+          className="size-full p-4 overflow-hidden flex flex-col gap-4"
+          suppressHydrationWarning
+        >
           <div className="flex items-center gap-3">
             <ListTodo className="h-5 w-5 text-muted-foreground" />
             <h1 className="text-lg font-semibold leading-tight">
