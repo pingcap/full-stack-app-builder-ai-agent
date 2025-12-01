@@ -18,6 +18,7 @@ import {
   ToolInput,
   ToolOutput,
 } from "@/components/ai-elements/tool";
+import { AnsiLogs } from "@/components/ansi-logs";
 import { Terminal } from "@/components/terminal";
 import { cn } from "@/lib/utils";
 
@@ -337,11 +338,11 @@ function BashPart({ part }: { part: ClaudeBuiltinToolPart<"Bash"> }) {
           <Loader />
         </span>
       )}
-      {part.output && (
-        <span className="text-muted-foreground">{part.output}</span>
-      )}
+      {part.output && <AnsiLogs raw={part.output} />}
       {part.errorText && (
-        <span className="text-destructive">{part.errorText}</span>
+        <div className="text-destructive">
+          <AnsiLogs raw={part.errorText} />
+        </div>
       )}
     </Terminal>
   );
