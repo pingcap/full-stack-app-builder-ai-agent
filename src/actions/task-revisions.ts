@@ -70,7 +70,7 @@ export async function createTaskRevision(params: CreateTaskRevisionParams) {
         {
           path: ".env.local",
           content: Buffer.from(
-            `DATABASE_URL=${branch.connection_url}\nOPENAI_API_KEY=${settings?.openai_api_key ?? ''}\n`,
+            `DATABASE_URL=${branch.connection_url}\nOPENAI_API_KEY=${settings?.openai_api_key ?? ""}\n`,
             "utf-8",
           ),
         },
@@ -254,6 +254,7 @@ export async function deployTask(
   const project = await get(db, "project", { id: projectId });
   const task = await get(db, "task", { id: taskId });
   const taskRevision = await get(db, "task_revision", { id: taskRevisionId });
+  const settings = await get(db, "user_setting", { user_id: project.user_id });
 
   if (!taskRevision.git_commit_sha) {
     await update(
@@ -342,13 +343,22 @@ export async function deployTask(
       teamId: project.vercel_team_id,
       idOrName: project.vercel_project_id,
       upsert: "true",
-      requestBody: {
-        key: "DATABASE_URL",
-        value: branch.connection_url,
-        customEnvironmentIds: [env.id],
-        target: [],
-        type: "encrypted",
-      },
+      requestBody: [
+        {
+          key: "DATABASE_URL",
+          value: branch.connection_url,
+          customEnvironmentIds: [env.id],
+          target: [],
+          type: "encrypted",
+        },
+        {
+          key: "OPENAI_API_KEY",
+          value: settings?.openai_api_key ?? "",
+          customEnvironmentIds: [env.id],
+          target: [],
+          type: "encrypted",
+        },
+      ],
     });
   } catch (e) {
     const errorMessage = `failed to setup codegen-tidb-ai-preview environment. ${getErrorMessage(e)}`;

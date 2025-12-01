@@ -71,6 +71,14 @@ base_url = "https://cr-tokyo.breeswish.org/openai"
 wire_api = "responses"
 requires_openai_auth = true
 env_key = "CRS_OAI_KEY"
+
+[mcp_servers.playwright]
+command = "npx"
+args = ["@playwright/mcp@latest"]
+
+[mcp_servers.nextjs_devtools]
+command = "npx"
+args = ["-y", "next-devtools-mcp@latest"]
 '
 
 CODEX_AUTH_JSON='
