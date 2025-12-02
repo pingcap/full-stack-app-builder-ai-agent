@@ -108,7 +108,7 @@ fi
 set -e
 cd ~
 
-echo Try to recovering ${coding_agent_type} history...
+echo Try to recovering ${coding_agent_type} history ${coding_agent_type}-sessions/$USER_ID/$SANDBOX_SESSION_ID/${coding_agent_type}-data.zip...
 
 ret=0
 wget "$BLOB_PUBLIC_URL/${coding_agent_type}-sessions/$USER_ID/$SANDBOX_SESSION_ID/${coding_agent_type}-data.zip" 2>/dev/null || ret=$?
