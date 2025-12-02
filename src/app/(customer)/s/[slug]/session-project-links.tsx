@@ -1,6 +1,6 @@
 import { Vercel } from "@vercel/sdk";
 import { ChevronDown } from "lucide-react";
-import type { ReactElement, SVGProps } from "react";
+import type { ReactElement, ReactNode, SVGProps } from "react";
 import {
   getProject,
   type UISessionData,
@@ -17,6 +17,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { getSessionUserSettings } from "@/lib/auth";
+import {
+  getGitHubClient,
+  isGitHubSettingsValid,
+} from "@/lib/user-settings/github";
 
 const GithubIcon = (props: SVGProps<SVGSVGElement>) => (
   <svg
@@ -108,6 +112,58 @@ export async function SessionProjectLinks({
     </Tooltip>
   );
 
+  let githubBranches:
+    | {
+        branch: string;
+        commits: { sha: string; message: string; url: string }[];
+      }[]
+    | undefined;
+
+  if (settings && isGitHubSettingsValid(settings)) {
+    try {
+      const githubClient = getGitHubClient(settings.github_token);
+      const branches = await githubClient.paginate(
+        githubClient.rest.repos.listBranches,
+        {
+          owner: project.github_owner,
+          repo: project.github_repo,
+          per_page: 100,
+        },
+      );
+
+      githubBranches = await Promise.all(
+        branches.map(async (branch) => {
+          const commits: { sha: string; message: string; url: string }[] = [];
+
+          for await (const { data } of githubClient.paginate.iterator(
+            githubClient.rest.repos.listCommits,
+            {
+              owner: project.github_owner,
+              repo: project.github_repo,
+              sha: branch.name,
+              per_page: 100,
+            },
+          )) {
+            for (const commit of data) {
+              commits.push({
+                sha: commit.sha,
+                message:
+                  commit.commit.message?.split("\n")[0] ?? commit.sha ?? "",
+                url:
+                  commit.html_url ??
+                  `https://github.com/${project.github_owner}/${project.github_repo}/commit/${commit.sha}`,
+              });
+            }
+          }
+
+          return { branch: branch.name, commits };
+        }),
+      );
+    } catch (error) {
+      githubBranches = undefined;
+    }
+  }
+
   let vercelMeta:
     | {
         teamSlug: string;
@@ -194,6 +250,43 @@ export async function SessionProjectLinks({
               value={`${project.github_owner}/${project.github_repo}`}
               icon={<GithubIcon className="h-4 w-4 text-muted-foreground" />}
               links={[{ label: "Open repository", href: githubHref }]}
+              children={
+                githubBranches?.length ? (
+                  <div className="space-y-2">
+                    {githubBranches.map((branch) => (
+                      <div
+                        key={branch.branch}
+                        className="rounded-md border border-border/50 p-2"
+                      >
+                        <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                          <span>{branch.branch}</span>
+                          <span>{branch.commits.length} commits</span>
+                        </div>
+                        <div className="mt-2 max-h-48 space-y-1 overflow-y-auto text-[11px]">
+                          {branch.commits.map((commit) => (
+                            <div
+                              key={commit.sha}
+                              className="flex items-start gap-2"
+                            >
+                              <span className="font-mono text-muted-foreground/70">
+                                {commit.sha.slice(0, 7)}
+                              </span>
+                              <a
+                                href={commit.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="line-clamp-2 text-foreground hover:underline"
+                              >
+                                {commit.message}
+                              </a>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : undefined
+              }
             />
             {vercelMeta ? (
               <ResourceDetail
@@ -259,12 +352,14 @@ function ResourceDetail({
   details,
   links,
   icon,
+  children,
 }: {
   title: string;
   value?: string;
   details?: { label: string; value: string }[];
   links?: { label: string; href: string }[];
   icon?: ReactElement;
+  children?: ReactNode;
 }) {
   return (
     <div className="space-y-1.5">
@@ -289,6 +384,7 @@ function ResourceDetail({
           </tbody>
         </table>
       ) : null}
+      {children}
       {links?.length ? (
         <div className="flex flex-wrap gap-3 text-xs">
           {links.map((link) => (
