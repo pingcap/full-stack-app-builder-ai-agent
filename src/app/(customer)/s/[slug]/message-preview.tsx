@@ -10,6 +10,13 @@ import {
   ReasoningContent,
   ReasoningTrigger,
 } from "@/components/ai-elements/reasoning";
+import {
+  Tool,
+  ToolContent,
+  ToolHeader,
+  ToolInput,
+  ToolOutput,
+} from "@/components/ai-elements/tool";
 import { ClaudeToolPart } from "@/components/claude-tool-part";
 import { CodexToolPart } from "@/components/codex-tool-part";
 
@@ -47,6 +54,27 @@ export function MessagePreview({
                         key={`${part.type}-${index}`}
                         part={part as never}
                       />
+                    );
+                  }
+                  if (part.type === "dynamic-tool") {
+                    return (
+                      <Tool>
+                        <ToolHeader
+                          type={`tool-${part.toolName}`}
+                          state={part.state}
+                        />
+                        <ToolContent>
+                          {part.input != null && (
+                            <ToolInput input={part.input} />
+                          )}
+                          {(part.output != null || part.errorText != null) && (
+                            <ToolOutput
+                              output={part.output}
+                              errorText={part.errorText}
+                            />
+                          )}
+                        </ToolContent>
+                      </Tool>
                     );
                   }
                 } else if (coding_agent_type === "claude") {
