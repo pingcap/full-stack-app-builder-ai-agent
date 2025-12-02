@@ -28,7 +28,7 @@ An open-source starter kit using TiDB Cloud, Vercel, Kysely, and GitHub. Think o
 
 ## How It Works (End-to-End)
 <p align="center">
-  <img alt="End-to-end user flow: prompt to plan, provision, generate, migrate, deploy, and iterate" src="./public/userflow.png" width="960" />
+  <img alt="End-to-end user flow: prompt to plan, provision, generate, migrate, deploy, and iterate" src="./public/userflow.png" width="720" />
 </p>
 
 1. **Prompt** – “Build a todo app.”  
