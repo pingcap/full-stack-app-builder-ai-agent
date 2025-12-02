@@ -77,7 +77,7 @@ An open-source starter kit using TiDB Cloud, Vercel, Kysely, and GitHub. Think o
     await db.schema.alterTable("todo_list").dropColumn("username").execute();
   }
   ```
-- **Scale-to-zero** – TiDB Cloud serverless + Vercel sandboxes support many isolated environments without idle cost.
+- **Scale-to-zero** – TiDB Cloud automatically scales down to $0 when idle, enabling ephemeral AI-generated apps, on-demand dev envs, branch-per-instruction workflows, and bursty agent workloads without persistent costs.
 
 ## Directory Layout
 | Path | Purpose |
