@@ -74,13 +74,13 @@ export default function Page() {
         }}
       />
       <div className="relative h-full w-full flex items-center justify-center px-4">
-        <div className="w-full max-w-xl space-y-3 text-center -mt-10">
+        <div className="w-full max-w-xl space-y-3 text-center -mt-16">
           <div className="space-y-2">
             <div className="flex justify-center">
               <img
                 src="/TiDB-Logo-w-Tagline-Full-Pos-RGB.svg"
                 alt="TiDB Logo"
-                className="h-20 w-auto"
+                className="h-28 w-auto"
               />
             </div>
             <h1 className="text-2xl font-semibold">
