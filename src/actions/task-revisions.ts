@@ -18,7 +18,7 @@ type CreateTaskRevisionParams = Pick<
   Insertable<DB["task_revision"]>,
   "prompt" | "task_id" | "user_prompt"
 > & {
-  sandbox_type: "codex" | "claude";
+  sandbox_type: "codex" | "claude" | "claude-opus";
 };
 
 export async function createTaskRevision(params: CreateTaskRevisionParams) {
@@ -116,7 +116,7 @@ trap call_err_hook ERR
 
 # executing coding agent
 echo "Executing coding agent..."
-code-tee --stream-server-url ${quote([process.env.STREAM_PROXY_URL!])} --stream-id ${quote([session])} ${project.coding_agent_type} ${quote([params.prompt])} ${agentOptions[project.coding_agent_type]} 1>/tmp/result.txt
+code-tee --stream-server-url ${quote([process.env.STREAM_PROXY_URL!])} --stream-id ${quote([session])} ${project.coding_agent_type.startsWith("claude-") ? "claude" : project.coding_agent_type} ${quote([params.prompt])} ${agentOptions[project.coding_agent_type]} 1>/tmp/result.txt
 RESULT_TXT=$(cat /tmp/result.txt || echo '')
 
 # push commit
@@ -243,6 +243,7 @@ export async function getTaskRevisionCommandStatus(id: number) {
 
 const agentOptions: Record<string, string> = {
   claude: "--dangerously-skip-permissions -c",
+  "claude-opus": "--dangerously-skip-permissions -c --model opus",
   codex: "--dangerously-bypass-approvals-and-sandbox",
 };
 

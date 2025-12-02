@@ -41,7 +41,7 @@ export async function* startSandbox({
   ...options
 }: StartSandboxOptions &
   Credentials & {
-    coding_agent_type: "codex" | "claude";
+    coding_agent_type: "codex" | "claude" | "claude-opus";
   }): AsyncGenerator<StartSandboxEvent> {
   const sandbox = await Sandbox.create({
     ...options,
@@ -88,7 +88,7 @@ echo "$CODEX_AUTH_JSON" > ~/.codex/auth.json
 }
 
 echo Installing tools
-npm i -g ${coding_agent_type === "codex" ? "@openai/codex" : ""} ${coding_agent_type === "claude" ? "@openai/codex " : ""}code-tee vercel
+npm i -g ${coding_agent_type === "codex" ? "@openai/codex" : ""} ${coding_agent_type === "claude" || coding_agent_type === "claude-opus" ? "@openai/codex " : ""}code-tee vercel
 ${coding_agent_type === "claude" ? "curl -fsSL https://claude.ai/install.sh | bash" : ""}
 
 echo Installing MCPs
@@ -104,7 +104,7 @@ codex mcp add shadcn npx -y "shadcn@latest" "mcp"
     : ""
 }
 ${
-  coding_agent_type === "claude"
+  coding_agent_type === "claude" || coding_agent_type === "claude-opus"
     ? `
 claude mcp add nextjs-devtools npx -- -y "next-devtools-mcp@latest"
 claude mcp add shadcn npx -- -y "shadcn@latest" "mcp"

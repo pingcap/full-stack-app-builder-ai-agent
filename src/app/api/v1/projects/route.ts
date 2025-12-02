@@ -15,7 +15,7 @@ const requestSchema = z.object({
     ),
   description: z.string().optional().default(""),
   vercel_team_id: z.string(),
-  coding_agent_type: z.enum(["codex", "claude"]),
+  coding_agent_type: z.enum(["codex", "claude", "claude-opus"]),
 });
 
 export async function POST(request: NextRequest) {

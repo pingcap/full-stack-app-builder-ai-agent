@@ -8,7 +8,7 @@ import type { UISessionMessageChunk } from "@/prompts/ui-session";
 
 const requestSchema = z.object({
   first_prompt: z.string(),
-  coding_agent_type: z.enum(["codex", "claude"]),
+  coding_agent_type: z.enum(["codex", "claude", "claude-opus"]),
 });
 
 export type CreateSessionResult = ReturnType<typeof POST> extends Promise<
