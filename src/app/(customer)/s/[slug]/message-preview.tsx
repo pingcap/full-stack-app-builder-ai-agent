@@ -77,7 +77,7 @@ export function MessagePreview({
                       </Tool>
                     );
                   }
-                } else if (coding_agent_type === "claude") {
+                } else if (/^claude(-opus)?/.test(coding_agent_type)) {
                   if (part.type === "dynamic-tool") {
                     return (
                       <ClaudeToolPart

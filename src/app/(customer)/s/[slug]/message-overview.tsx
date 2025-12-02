@@ -147,7 +147,7 @@ export function MessageOverview({
           message={message}
         />
       )}
-      {coding_agent_type === "claude" && (
+      {/^claude(-opus)?/.test(coding_agent_type) && (
         <ClaudeOverviewContent
           task_revision={task_revision}
           branchCreated={branchCreated}
