@@ -18,7 +18,7 @@ An open-source starter kit using TiDB Cloud, Vercel, Kysely, and GitHub. Think o
 ## Architecture Overview
 
 <p align="center">
-  <img alt="Architecture Overview: Full-Stack App-Builder AI Agent" src="./public/architecture.png" width="720" />
+  <img alt="Architecture Overview: Full-Stack App-Builder AI Agent" src="./public/architecture.png" width="960" />
 </p>
 
 - **Server actions** (`src/actions/*`) orchestrate GitHub, TiDB Cloud, and Vercel resources.
@@ -28,7 +28,7 @@ An open-source starter kit using TiDB Cloud, Vercel, Kysely, and GitHub. Think o
 
 ## How It Works (End-to-End)
 <p align="center">
-  <img alt="End-to-end user flow: prompt to plan, provision, generate, migrate, deploy, and iterate" src="./public/userflow.png" width="720" />
+  <img alt="End-to-end user flow: prompt to plan, provision, generate, migrate, deploy, and iterate" src="./public/userflow.png" width="960" />
 </p>
 
 1. **Prompt** – “Build a todo app.”  
