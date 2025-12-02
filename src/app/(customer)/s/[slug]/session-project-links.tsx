@@ -19,10 +19,6 @@ import {
 import { getSessionUserSettings } from "@/lib/auth";
 import { listBranches } from "@/lib/tidbcloud/sdk";
 import { isTiDBCloudSettingsValid } from "@/lib/user-settings/tidbcloud";
-import {
-  getGitHubClient,
-  isGitHubSettingsValid,
-} from "@/lib/user-settings/github";
 
 const GithubIcon = (props: SVGProps<SVGSVGElement>) => (
   <svg
@@ -89,19 +85,6 @@ export async function SessionProjectLinks({
     return null;
   }
 
-  const latestSandboxId = [...session.task_revisions]
-    .slice()
-    .reverse()
-    .find((rev) => rev.vercel_sandbox_id)?.vercel_sandbox_id;
-  const latestDeploymentId = [...session.task_revisions]
-    .slice()
-    .reverse()
-    .find((rev) => rev.vercel_deployment_id)?.vercel_deployment_id;
-  const latestBranchId = [...session.task_revisions]
-    .slice()
-    .reverse()
-    .find((rev) => rev.tidbcloud_branch_id)?.tidbcloud_branch_id;
-
   const githubHref = `https://github.com/${project.github_owner}/${project.github_repo}`;
   const github = (
     <Tooltip>
@@ -114,57 +97,27 @@ export async function SessionProjectLinks({
     </Tooltip>
   );
 
-  let githubBranches:
-    | {
-        branch: string;
-        commits: { sha: string; message: string; url: string }[];
-      }[]
-    | undefined;
-
-  if (settings && isGitHubSettingsValid(settings)) {
-    try {
-      const githubClient = getGitHubClient(settings.github_token);
-      const branches = await githubClient.paginate(
-        githubClient.rest.repos.listBranches,
-        {
-          owner: project.github_owner,
-          repo: project.github_repo,
-          per_page: 100,
-        },
-      );
-
-      githubBranches = await Promise.all(
-        branches.map(async (branch) => {
-          const commits: { sha: string; message: string; url: string }[] = [];
-
-          for await (const { data } of githubClient.paginate.iterator(
-            githubClient.rest.repos.listCommits,
-            {
-              owner: project.github_owner,
-              repo: project.github_repo,
-              sha: branch.name,
-              per_page: 100,
-            },
-          )) {
-            for (const commit of data) {
-              commits.push({
-                sha: commit.sha,
+  const branchName =
+    session.task?.git_branch_name && session.task.git_branch_name.length
+      ? session.task.git_branch_name
+      : "main";
+  const githubBranches = [
+    {
+      branch: branchName,
+      commits: session.task_revisions
+        .map((rev) =>
+          rev.git_commit_sha
+            ? {
+                sha: rev.git_commit_sha,
                 message:
-                  commit.commit.message?.split("\n")[0] ?? commit.sha ?? "",
-                url:
-                  commit.html_url ??
-                  `https://github.com/${project.github_owner}/${project.github_repo}/commit/${commit.sha}`,
-              });
-            }
-          }
-
-          return { branch: branch.name, commits };
-        }),
-      );
-    } catch (error) {
-      githubBranches = undefined;
-    }
-  }
+                  rev.user_prompt ?? rev.prompt ?? rev.git_commit_sha.slice(0, 7),
+                url: `https://github.com/${project.github_owner}/${project.github_repo}/commit/${rev.git_commit_sha}`,
+              }
+            : null,
+        )
+        .filter((c): c is { sha: string; message: string; url: string } => Boolean(c)),
+    },
+  ];
 
   let vercelMeta:
     | {
