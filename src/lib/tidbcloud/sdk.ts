@@ -182,6 +182,34 @@ export async function getBranch(
   return await response.json();
 }
 
+export async function listBranches(
+  clusterId: string,
+  settings: TiDBCloudSettings,
+): Promise<BranchInfo[]> {
+  const response = await tidbCloudFetch(
+    `https://serverless.tidbapi.com/v1beta1/clusters/${clusterId}/branches`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      digest: {
+        username: settings.tidbcloud_public_key,
+        password: settings.tidbcloud_private_key,
+      },
+    },
+  ).then(handleError);
+
+  const data = await response.json();
+  if (Array.isArray(data?.branches)) {
+    return data.branches;
+  }
+  if (Array.isArray(data)) {
+    return data;
+  }
+  return [];
+}
+
 const handleError = async (response: Response | Promise<Response>) => {
   response = await response;
   if (!response.ok) {

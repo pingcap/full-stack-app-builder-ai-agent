@@ -17,6 +17,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { getSessionUserSettings } from "@/lib/auth";
+import { listBranches } from "@/lib/tidbcloud/sdk";
+import { isTiDBCloudSettingsValid } from "@/lib/user-settings/tidbcloud";
 import {
   getGitHubClient,
   isGitHubSettingsValid,
@@ -224,6 +226,34 @@ export async function SessionProjectLinks({
     </Tooltip>
   );
 
+  let tidbBranches:
+    | {
+        branchId: string;
+        displayName?: string;
+        state?: string;
+      }[]
+    | undefined;
+
+  if (
+    project.tidbcloud_cluster_id &&
+    settings &&
+    isTiDBCloudSettingsValid(settings)
+  ) {
+    try {
+      const branches = await listBranches(
+        project.tidbcloud_cluster_id,
+        settings,
+      );
+      tidbBranches = branches.map((branch) => ({
+        branchId: branch.branchId,
+        displayName: branch.displayName,
+        state: branch.state,
+      }));
+    } catch {
+      tidbBranches = undefined;
+    }
+  }
+
   return (
     <TooltipProvider>
       <DropdownMenu>
@@ -244,7 +274,7 @@ export async function SessionProjectLinks({
           className="w-96 max-w-[90vw] overflow-hidden p-0"
           align="end"
         >
-          <div className="space-y-4 p-4 text-sm overflow-hidden">
+          <div className="space-y-4 p-4 text-sm overflow-auto max-h-[70vh]">
             <ResourceDetail
               title="GitHub Repository"
               value={`${project.github_owner}/${project.github_repo}`}
@@ -296,16 +326,9 @@ export async function SessionProjectLinks({
                   <VercelIconSvg className="h-4 w-4 text-muted-foreground" />
                 }
                 details={
-                  [
-                    latestSandboxId && {
-                      label: "Sandbox",
-                      value: latestSandboxId,
-                    },
-                    latestDeploymentId && {
-                      label: "Deployment",
-                      value: latestDeploymentId,
-                    },
-                  ].filter(Boolean) as { label: string; value: string }[]
+                  latestDeploymentId
+                    ? [{ label: "Deployment", value: latestDeploymentId }]
+                    : undefined
                 }
                 links={[
                   {
@@ -327,10 +350,31 @@ export async function SessionProjectLinks({
               title="TiDB Cloud"
               value={`Cluster ${project.tidbcloud_cluster_id}`}
               icon={<TiDBIcon className="h-4 w-4" />}
-              details={
-                latestBranchId
-                  ? [{ label: "Branch", value: latestBranchId }]
-                  : undefined
+              children={
+                tidbBranches?.length ? (
+                  <div className="overflow-hidden rounded-md border border-border/60">
+                    <table className="w-full text-[11px]">
+                      <thead className="bg-muted/60 text-muted-foreground uppercase tracking-wide">
+                        <tr className="text-left">
+                          <th className="px-3 py-2 font-semibold">Branch</th>
+                          <th className="px-3 py-2 font-semibold">State</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border/60">
+                        {tidbBranches.map((branch) => (
+                          <tr key={branch.branchId}>
+                            <td className="px-3 py-2 font-medium text-foreground">
+                              {branch.displayName ?? branch.branchId}
+                            </td>
+                            <td className="px-3 py-2 text-muted-foreground">
+                              {branch.state ?? "—"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : undefined
               }
               links={[
                 {
