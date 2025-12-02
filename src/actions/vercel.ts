@@ -39,6 +39,7 @@ export async function createSandbox(
   }
 
   for await (const event of startSandbox({
+    user_id: settings.user_id,
     coding_agent_type: project.coding_agent_type as never,
     session: generateSessionId(projectId, taskId, taskRevisionId),
     gitBranch: task.git_branch_name,

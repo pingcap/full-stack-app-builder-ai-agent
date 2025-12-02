@@ -31,6 +31,7 @@ export type StartSandboxEvent =
     };
 
 export async function* startSandbox({
+  user_id,
   coding_agent_type,
   session,
   blobId,
@@ -41,6 +42,7 @@ export async function* startSandbox({
   ...options
 }: StartSandboxOptions &
   Credentials & {
+    user_id: number;
     coding_agent_type: "codex" | "claude" | "claude-opus";
   }): AsyncGenerator<StartSandboxEvent> {
   const sandbox = await Sandbox.create({
@@ -91,27 +93,6 @@ echo Installing tools
 npm i -g ${coding_agent_type === "codex" ? "@openai/codex" : ""} ${/^claude(-opus)?/.test(coding_agent_type) ? "@openai/codex " : ""}code-tee vercel
 ${/^claude(-opus)?/.test(coding_agent_type) ? "curl -fsSL https://claude.ai/install.sh | bash" : ""}
 
-echo Installing MCPs
-
-cd /vercel/sandbox
-
-${
-  coding_agent_type === "codex"
-    ? `
-codex mcp add nextjs-devtools npx -y "next-devtools-mcp@latest"
-codex mcp add shadcn npx -y "shadcn@latest" "mcp"
-`
-    : ""
-}
-${
-  /^claude(-opus)?/.test(coding_agent_type)
-    ? `
-claude mcp add nextjs-devtools npx -- -y "next-devtools-mcp@latest"
-claude mcp add shadcn npx -- -y "shadcn@latest" "mcp"
-`
-    : ""
-}
-
 
 PACKAGE_JSON="$(npm prefix)/package.json"
 
@@ -138,8 +119,27 @@ if [ $ret -eq 0 ]; then
   rm ${coding_agent_type}-data.zip
 fi
 
-
 cd /vercel/sandbox
+
+echo Setup MCP Servers
+
+${
+  coding_agent_type === "codex"
+    ? `
+codex mcp add nextjs-devtools npx -y "next-devtools-mcp@latest"
+codex mcp add shadcn npx -y "shadcn@latest" "mcp"
+`
+    : ""
+}
+${
+  /^claude(-opus)?/.test(coding_agent_type)
+    ? `
+claude mcp add nextjs-devtools npx -- -y "next-devtools-mcp@latest"
+claude mcp add shadcn npx -- -y "shadcn@latest" "mcp"
+`
+    : ""
+}
+
 echo Checking out branch...
 
 echo git branch -f "$GIT_BRANCH" "$GIT_REVISION"
@@ -190,6 +190,7 @@ git clean -fx
       cmd: "bash",
       args: ["-c", resumeScript],
       env: {
+        USER_ID: String(user_id),
         SANDBOX_SESSION_ID: session,
         BLOB_PUBLIC_URL: `https://${blobId.replace(/^store_/, "")}.public.blob.vercel-storage.com`,
         GIT_BRANCH: gitBranch,
