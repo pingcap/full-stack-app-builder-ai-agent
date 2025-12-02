@@ -101,7 +101,7 @@ export default async function SessionPage({
                       </Message>
                       <Message from="assistant" className="min-h-[50vh]">
                         {task_revision.agent_result ? (
-                          <MessageContent>
+                          <MessageContent className="max-w-full overflow-x-hidden">
                             <AutoCollapse
                               collapseThresholdHeight={288}
                               className="from-white/100 to-white/0"

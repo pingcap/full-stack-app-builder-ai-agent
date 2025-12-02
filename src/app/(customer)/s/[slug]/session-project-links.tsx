@@ -184,7 +184,10 @@ export async function SessionProjectLinks({
             <ChevronDown className="h-3.5 w-3.5" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-96 max-w-[90vw] overflow-hidden p-0" align="end">
+        <DropdownMenuContent
+          className="w-96 max-w-[90vw] overflow-hidden p-0"
+          align="end"
+        >
           <div className="space-y-4 p-4 text-sm overflow-hidden">
             <ResourceDetail
               title="GitHub Repository"
@@ -196,14 +199,21 @@ export async function SessionProjectLinks({
               <ResourceDetail
                 title="Vercel Project"
                 value={`${vercelMeta.teamSlug}/${vercelMeta.projectName}`}
-                icon={<VercelIconSvg className="h-4 w-4 text-muted-foreground" />}
-                details={[
-                  latestSandboxId && { label: "Sandbox", value: latestSandboxId },
-                  latestDeploymentId && {
-                    label: "Deployment",
-                    value: latestDeploymentId,
-                  },
-                ].filter(Boolean) as { label: string; value: string }[]}
+                icon={
+                  <VercelIconSvg className="h-4 w-4 text-muted-foreground" />
+                }
+                details={
+                  [
+                    latestSandboxId && {
+                      label: "Sandbox",
+                      value: latestSandboxId,
+                    },
+                    latestDeploymentId && {
+                      label: "Deployment",
+                      value: latestDeploymentId,
+                    },
+                  ].filter(Boolean) as { label: string; value: string }[]
+                }
                 links={[
                   {
                     label: "Open Vercel project",
@@ -260,9 +270,7 @@ function ResourceDetail({
     <div className="space-y-1.5">
       <div className="flex items-center gap-2 text-muted-foreground">
         {icon}
-        <p className="text-xs font-semibold uppercase tracking-wide">
-          {title}
-        </p>
+        <p className="text-xs font-semibold uppercase tracking-wide">{title}</p>
       </div>
       {value && <p className="text-sm font-medium text-foreground">{value}</p>}
       {details?.length ? (

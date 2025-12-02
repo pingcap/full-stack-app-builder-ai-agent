@@ -163,10 +163,14 @@ git clean -fx
     await assertCommandSuccess(
       sandbox.runCommand({
         cmd: "dnf",
-        args: ["install", "-y", "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"],
+        args: [
+          "install",
+          "-y",
+          "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm",
+        ],
         sudo: true,
       }),
-    )
+    );
 
     const setupCommand = await sandbox.runCommand({
       cmd: "bash",
