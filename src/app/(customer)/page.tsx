@@ -158,6 +158,15 @@ export default function Page() {
               >
                 View the source on GitHub
               </a>
+              <span className="mx-2 text-muted-foreground/70">•</span>
+              <a
+                className="underline underline-offset-2 hover:text-foreground"
+                href="https://www.pingcap.com/blog/ai-agent-that-builds-full-stack-apps/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                How it works
+              </a>
             </p>
           </div>
         </div>
