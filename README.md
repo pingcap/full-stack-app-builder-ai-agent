@@ -41,30 +41,43 @@ An open-source starter kit using TiDB Cloud, Vercel, Kysely, and GitHub. Think o
 
 ## Magic Features
 - **Checkpointed versions** – Git branches map to TiDB branches for perfect code–data sync.
-- **Type-safe migrations** – Kysely migrations keep schema evolution safe and reversible.
-- **Scale-to-zero** – TiDB Cloud serverless + Vercel sandboxes support many isolated environments without idle cost.
+  ```ts
+  // TiDB Cloud branch creation (simplified)
+  import fetch from "node-fetch";
 
-```ts
-// TiDB Cloud branch creation (simplified)
-import fetch from "node-fetch";
-
-async function createBranch(clusterId, displayName, publicKey, privateKey) {
-  const res = await fetch(
-    `https://serverless.tidbapi.com/v1beta1/clusters/${clusterId}/branches`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization:
-          "Basic " + Buffer.from(`${publicKey}:${privateKey}`).toString("base64"),
+  async function createBranch(clusterId, displayName, publicKey, privateKey) {
+    const res = await fetch(
+      `https://serverless.tidbapi.com/v1beta1/clusters/${clusterId}/branches`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization:
+            "Basic " + Buffer.from(`${publicKey}:${privateKey}`).toString("base64"),
+        },
+        body: JSON.stringify({ displayName }),
       },
-      body: JSON.stringify({ displayName }),
-    },
-  );
-  if (!res.ok) throw new Error(await res.text());
-  return (await res.json()).branchId;
-}
-```
+    );
+    if (!res.ok) throw new Error(await res.text());
+    return (await res.json()).branchId;
+  }
+  ```
+- **Type-safe migrations** – Kysely migrations keep schema evolution safe and reversible.
+  ```ts
+  import type { Kysely } from "kysely";
+
+  export async function up(db: Kysely<any>) {
+    await db.schema
+      .alterTable("todo_list")
+      .addColumn("username", "varchar(255)", (col) => col.notNull().defaultTo(""))
+      .execute();
+  }
+
+  export async function down(db: Kysely<any>) {
+    await db.schema.alterTable("todo_list").dropColumn("username").execute();
+  }
+  ```
+- **Scale-to-zero** – TiDB Cloud serverless + Vercel sandboxes support many isolated environments without idle cost.
 
 ## Directory Layout
 | Path | Purpose |
