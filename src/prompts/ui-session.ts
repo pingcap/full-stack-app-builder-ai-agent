@@ -32,6 +32,9 @@ Help user to generate the meta fields and first prompt:
   - DATABASE_URL: the database connection url of TiDBCloud Cluster
   - OPENAI_API_KEY: the OpenAI API key to access OpenAI API
 - Append original user prompt to the end to prevent misunderstanding.
+- MCP Tools available, use if needed:
+  - nextjs devtools mcp - to debug dev service
+  - shadcn mcp tools to get shadcn/ui registries and component examples if you are confused.
 `;
 
 const defaultModel = openai("gpt-5.1");

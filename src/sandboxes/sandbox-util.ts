@@ -88,10 +88,8 @@ echo "$CODEX_AUTH_JSON" > ~/.codex/auth.json
 }
 
 echo Installing tools
-npm i -g playwright
 npm i -g ${coding_agent_type === "codex" ? "@openai/codex" : ""} ${coding_agent_type === "claude" ? "@openai/codex " : ""}code-tee vercel
 ${coding_agent_type === "claude" ? "curl -fsSL https://claude.ai/install.sh | bash" : ""}
-playwright install chromium
 
 echo Installing MCPs
 
@@ -161,6 +159,14 @@ git clean -fx
         sudo: true,
       }),
     );
+
+    await assertCommandSuccess(
+      sandbox.runCommand({
+        cmd: "dnf",
+        args: ["install", "-y", "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"],
+        sudo: true,
+      }),
+    )
 
     const setupCommand = await sandbox.runCommand({
       cmd: "bash",
