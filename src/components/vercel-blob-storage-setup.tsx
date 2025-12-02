@@ -23,7 +23,7 @@ import { useQuery } from "@tanstack/react-query";
 import Form from "next/form";
 import { useState } from "react";
 
-export function VercelBlobStorageSelect({
+export function VercelBlobStorageSetup({
   vercelBlobId,
   vercelBlobTeamId,
   enabled,

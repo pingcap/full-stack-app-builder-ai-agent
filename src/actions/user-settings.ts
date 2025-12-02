@@ -1,7 +1,12 @@
 "use server";
 
+import type { Endpoints } from "@octokit/types";
+import type { AuthUser } from "@vercel/sdk/models/authuser";
+import type { AuthUserLimited } from "@vercel/sdk/models/authuserlimited";
+import { refresh } from "next/cache";
 import { getSessionUser, getSessionUserSettings } from "@/lib/auth";
 import db from "@/lib/db/db";
+import { getErrorMessage, handleFetchResponseError } from "@/lib/errors";
 import { update } from "@/lib/kysely-utils";
 import { type AccessKeyInfo, getAccessKeyInfo } from "@/lib/tidbcloud/sdk";
 import {
@@ -10,10 +15,11 @@ import {
 } from "@/lib/user-settings/github";
 import { getVercelClient } from "@/lib/user-settings/vercel";
 import { getBlobStorageReadWriteToken } from "@/lib/vercel/blobs";
-import { Endpoints } from "@octokit/types";
-import type { AuthUser } from "@vercel/sdk/models/authuser";
-import type { AuthUserLimited } from "@vercel/sdk/models/authuserlimited";
-import { refresh } from "next/cache";
+
+export type OpenaiUser = {
+  name: string;
+  email: string;
+};
 
 export type GithubUserResponse = Endpoints["GET /user"]["response"]["data"];
 
@@ -119,6 +125,31 @@ export async function setVercelBlobStorage(formData: FormData) {
   refresh();
 }
 
+export async function setVercelDefaultProjectTeam(formData: FormData) {
+  const user = await getSessionUser();
+
+  if (!user) {
+    return "User not found.";
+  }
+
+  const default_vercel_project_team_id = formData.get(
+    "default_vercel_project_team_id",
+  );
+  if (typeof default_vercel_project_team_id !== "string") {
+    return "Invalid input.";
+  }
+  await update(
+    db,
+    "user_setting",
+    {
+      default_vercel_project_team_id,
+    },
+    { user_id: user.id },
+  );
+
+  refresh();
+}
+
 export async function setTidbCloudAccessKey(formData: FormData) {
   const user = await getSessionUser();
 
@@ -170,6 +201,36 @@ export async function setTidbCloudAccessKey(formData: FormData) {
   return result;
 }
 
+export async function setOpenaiApiKey(formData: FormData) {
+  const token = formData.get("openai_api_key");
+  if (typeof token !== "string") {
+    return "No token provided.";
+  }
+  const user = await getSessionUser();
+
+  if (!user) {
+    return "User not found.";
+  }
+
+  const result = await validateOpenaiApiKey(token);
+  if (typeof result === "string") {
+    return result;
+  }
+
+  await update(
+    db,
+    "user_setting",
+    {
+      openai_api_key: token,
+    },
+    { user_id: user.id },
+  );
+
+  refresh();
+
+  return result;
+}
+
 export async function validateGitHubToken(
   token?: string | undefined | null,
 ): Promise<GithubUserResponse | string> {
@@ -190,7 +251,7 @@ export async function validateGitHubToken(
     const { data: user } = await octokit.rest.users.getAuthenticated();
     return user;
   } catch (e) {
-    return String((e as Error)?.message ?? e);
+    return getErrorMessage(e);
   }
 }
 
@@ -215,7 +276,7 @@ export async function validateVercelToken(
 
     return user;
   } catch (e) {
-    return String((e as Error)?.message ?? e);
+    return getErrorMessage(e);
   }
 }
 
@@ -241,6 +302,30 @@ export async function validateTidbCloudAccessKey(
 
     return info;
   } catch (e) {
-    return String((e as Error)?.message ?? e);
+    return getErrorMessage(e);
+  }
+}
+
+export async function validateOpenaiApiKey(token?: string | null) {
+  try {
+    if (!token) {
+      const sessionUserSettings = await getSessionUserSettings();
+
+      if (isGitHubSettingsValid(sessionUserSettings)) {
+        token = sessionUserSettings.openai_api_key;
+      }
+    }
+
+    const res = await fetch("https://api.openai.com/v1/me", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }).then(handleFetchResponseError);
+
+    const dat = await res.json();
+
+    return dat as OpenaiUser;
+  } catch (e) {
+    return getErrorMessage(e);
   }
 }
