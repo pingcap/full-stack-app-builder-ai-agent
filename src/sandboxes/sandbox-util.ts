@@ -131,7 +131,7 @@ cd /vercel/sandbox
 echo Setup MCP Servers
 
 ${
-  coding_agent_type === "codex"
+  lastSession == null && coding_agent_type === "codex"
     ? `
 codex mcp add nextjs-devtools npx -y "next-devtools-mcp@latest"
 codex mcp add shadcn npx -y "shadcn@latest" "mcp"
@@ -139,7 +139,7 @@ codex mcp add shadcn npx -y "shadcn@latest" "mcp"
     : ""
 }
 ${
-  /^claude(-opus)?/.test(coding_agent_type)
+  lastSession == null && /^claude(-opus)?/.test(coding_agent_type)
     ? `
 claude mcp add nextjs-devtools npx -- -y "next-devtools-mcp@latest"
 claude mcp add shadcn npx -- -y "shadcn@latest" "mcp"
