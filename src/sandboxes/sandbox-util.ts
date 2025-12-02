@@ -7,6 +7,7 @@ export interface StartSandboxOptions
   extends Omit<CreateSandboxParams, "runtime"> {
   // This session is used to save and resume a development environment.
   session: string;
+  lastSession: string | undefined;
   blobId: string;
   gitBranch: string;
   gitRevision: string;
@@ -34,6 +35,7 @@ export async function* startSandbox({
   user_id,
   coding_agent_type,
   session,
+  lastSession,
   blobId,
   stdout,
   stderr,
@@ -108,16 +110,21 @@ fi
 set -e
 cd ~
 
-echo Try to recovering ${coding_agent_type} history ${coding_agent_type}-sessions/$USER_ID/$SANDBOX_SESSION_ID/${coding_agent_type}-data.zip...
+${
+  lastSession != null
+    ? `echo Try to recovering ${coding_agent_type} history ${coding_agent_type}-sessions/$USER_ID/$LAST_SANDBOX_SESSION_ID/${coding_agent_type}-data.zip...
 
 ret=0
-wget "$BLOB_PUBLIC_URL/${coding_agent_type}-sessions/$USER_ID/$SANDBOX_SESSION_ID/${coding_agent_type}-data.zip" 2>/dev/null || ret=$?
+wget "$BLOB_PUBLIC_URL/${coding_agent_type}-sessions/$USER_ID/$LAST_SANDBOX_SESSION_ID/${coding_agent_type}-data.zip" 2>/dev/null || ret=$?
 
 if [ $ret -eq 0 ]; then
   echo Decompressing previous session files...
   unzip -o ${coding_agent_type}-data.zip
   rm ${coding_agent_type}-data.zip
 fi
+`
+    : ""
+}
 
 cd /vercel/sandbox
 
@@ -192,6 +199,7 @@ git clean -fx
       env: {
         USER_ID: String(user_id),
         SANDBOX_SESSION_ID: session,
+        LAST_SANDBOX_SESSION_ID: String(lastSession),
         BLOB_PUBLIC_URL: `https://${blobId.replace(/^store_/, "")}.public.blob.vercel-storage.com`,
         GIT_BRANCH: gitBranch,
         GIT_REVISION: gitRevision,

@@ -27,6 +27,7 @@ export async function createSandbox(
   const task = await get(db, "task", { id: taskId });
   const taskRevision = await get(db, "task_revision", { id: taskRevisionId });
   let revision = task.git_revision_ref;
+  let lastSession: string | undefined;
   if (taskRevision.ordinal > 1) {
     const lastRevision = await get(db, "task_revision", {
       task_id: taskId,
@@ -36,12 +37,14 @@ export async function createSandbox(
       throw new Error("Previous revision does not have a git commit sha");
     }
     revision = lastRevision.git_commit_sha;
+    lastSession = generateSessionId(projectId, taskId, lastRevision.id);
   }
 
   for await (const event of startSandbox({
     user_id: settings.user_id,
     coding_agent_type: project.coding_agent_type as never,
     session: generateSessionId(projectId, taskId, taskRevisionId),
+    lastSession,
     gitBranch: task.git_branch_name,
     gitRevision: revision,
     blobId: settings.vercel_blob_storage_id,
