@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
+  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -117,6 +118,7 @@ export function NavProjects({
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
                           onClick={() => {
                             const id = toast.loading(`Deleting ${item.title}`);
@@ -128,11 +130,8 @@ export function NavProjects({
                               .then(() => {
                                 toast.dismiss(id);
                                 toast.success(`Deleted ${item.title}.`);
-                                if (isCurrentProject) {
-                                  router.push("/");
-                                } else {
-                                  router.refresh();
-                                }
+                                if (isCurrentProject) router.push("/");
+                                router.refresh();
                               })
                               .catch((err) => {
                                 toast.dismiss(id);
