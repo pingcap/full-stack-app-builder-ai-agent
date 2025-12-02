@@ -88,8 +88,10 @@ echo "$CODEX_AUTH_JSON" > ~/.codex/auth.json
 }
 
 echo Installing tools
+npm i -g playwright
 npm i -g ${coding_agent_type === "codex" ? "@openai/codex" : ""} ${coding_agent_type === "claude" ? "@openai/codex " : ""}code-tee vercel
 ${coding_agent_type === "claude" ? "curl -fsSL https://claude.ai/install.sh | bash" : ""}
+playwright install chromium
 
 echo Installing MCPs
 
