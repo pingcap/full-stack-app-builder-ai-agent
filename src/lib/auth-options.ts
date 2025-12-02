@@ -83,15 +83,19 @@ export default {
         if ((user as any).dbUser) {
           token.user = (user as any).dbUser;
         }
+        if (user.id.startsWith("db|")) {
+          const id = parseInt(user.id.replace(/^db\|/, ""));
+          token.user = omit(await get(db, "user", { id }), ["password"]);
+        }
       }
       return token;
     },
     session: async ({ session, token, user }) => {
-      if (token.user && (token.user as any).id) {
+      if (token.user) {
         session.user = token.user as any;
-      } else if (user?.id) {
-        const dbUser = await get(db, "user", { id: Number(user.id) });
-        session.user = omit(dbUser, ["password"]);
+      } else if (user && user.id.startsWith("db|")) {
+        const id = parseInt(user.id.replace(/^db\|/, ""));
+        session.user = omit(await get(db, "user", { id }), ["password"]);
       }
 
       return session;
