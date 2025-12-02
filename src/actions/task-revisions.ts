@@ -131,7 +131,7 @@ GIT_COMMIT_SHA=$(git rev-parse HEAD)
 # save ${project.coding_agent_type} sessions
 echo "Saving ${project.coding_agent_type} sessions..."
 cd ~
-zip ${project.coding_agent_type}-data.zip -r .${project.coding_agent_type}
+zip ${project.coding_agent_type}-data.zip -r ${quote(filesToZip[project.coding_agent_type])}
 vercel telemetry disable
 vercel blob put ${project.coding_agent_type}-data.zip --token "$VERCEL_TOKEN" --rw-token "$BLOB_READ_WRITE_TOKEN" --force --pathname "${project.coding_agent_type}-sessions/$USER_ID/$SANDBOX_SESSION_ID/${project.coding_agent_type}-data.zip"
 
@@ -186,6 +186,11 @@ call_finish_hook
 
   return await get(db, "task_revision", { id: taskRevision.id });
 }
+
+const filesToZip: Record<string, string[]> = {
+  codex: [".codex"],
+  claude: [".claude.json", ".claude"],
+};
 
 export async function getTaskRevisionCommandStatus(id: number) {
   try {
