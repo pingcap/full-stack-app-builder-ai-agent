@@ -120,6 +120,7 @@ export function NavProjects({
                         <AlertDialogAction
                           onClick={() => {
                             const id = toast.loading(`Deleting ${item.title}`);
+                            const isCurrentProject = slug === item.slug;
                             fetch(`/api/v1/projects/${item.project_id}`, {
                               method: "DELETE",
                             })
@@ -127,7 +128,11 @@ export function NavProjects({
                               .then(() => {
                                 toast.dismiss(id);
                                 toast.success(`Deleted ${item.title}.`);
-                                router.refresh();
+                                if (isCurrentProject) {
+                                  router.push("/");
+                                } else {
+                                  router.refresh();
+                                }
                               })
                               .catch((err) => {
                                 toast.dismiss(id);
