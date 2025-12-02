@@ -325,24 +325,11 @@ export async function SessionProjectLinks({
                 icon={
                   <VercelIconSvg className="h-4 w-4 text-muted-foreground" />
                 }
-                details={
-                  latestDeploymentId
-                    ? [{ label: "Deployment", value: latestDeploymentId }]
-                    : undefined
-                }
                 links={[
                   {
                     label: "Open Vercel project",
                     href: `https://vercel.com/${vercelMeta.teamSlug}/${vercelMeta.projectName}`,
                   },
-                  ...(latestDeploymentId
-                    ? [
-                        {
-                          label: "Latest deployment",
-                          href: `https://vercel.com/${vercelMeta.teamSlug}/${vercelMeta.projectName}/${latestDeploymentId}`,
-                        },
-                      ]
-                    : []),
                 ]}
               />
             ) : null}
@@ -352,27 +339,25 @@ export async function SessionProjectLinks({
               icon={<TiDBIcon className="h-4 w-4" />}
               children={
                 tidbBranches?.length ? (
-                  <div className="overflow-hidden rounded-md border border-border/60">
-                    <table className="w-full text-[11px]">
-                      <thead className="bg-muted/60 text-muted-foreground uppercase tracking-wide">
-                        <tr className="text-left">
-                          <th className="px-3 py-2 font-semibold">Branch</th>
-                          <th className="px-3 py-2 font-semibold">State</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border/60">
-                        {tidbBranches.map((branch) => (
-                          <tr key={branch.branchId}>
-                            <td className="px-3 py-2 font-medium text-foreground">
-                              {branch.displayName ?? branch.branchId}
-                            </td>
-                            <td className="px-3 py-2 text-muted-foreground">
-                              {branch.state ?? "—"}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="space-y-1 rounded-md border border-border/40 p-2 text-[12px]">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      Branches
+                    </p>
+                    <div className="space-y-1">
+                      {tidbBranches.map((branch) => (
+                        <div
+                          key={branch.branchId}
+                          className="flex items-center justify-between rounded-sm px-1 py-0.5"
+                        >
+                          <span className="font-medium text-foreground">
+                            {branch.displayName ?? branch.branchId}
+                          </span>
+                          <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                            {branch.state ?? "—"}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ) : undefined
               }
