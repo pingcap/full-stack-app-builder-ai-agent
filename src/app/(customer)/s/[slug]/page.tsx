@@ -29,6 +29,7 @@ import {
   MessageResponse,
 } from "@/components/ai-elements/message";
 import { AutoCollapse } from "@/components/auto-collapse";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Sheet,
   SheetContent,
@@ -119,12 +120,21 @@ export default async function SessionPage({
                             }
                           />
                         )}
-                        {task_revision.status !== "interrupted" && (
-                          <Actions
-                            task_revision={task_revision}
-                            index={task_revision_index}
-                          />
+                        {task_revision.status === "failed" && (
+                          <Alert variant="destructive">
+                            <AlertTitle>Failed to setup environment</AlertTitle>
+                            <AlertDescription>
+                              {task_revision.error}
+                            </AlertDescription>
+                          </Alert>
                         )}
+                        {task_revision.status !== "interrupted" &&
+                          task_revision.status !== "failed" && (
+                            <Actions
+                              task_revision={task_revision}
+                              index={task_revision_index}
+                            />
+                          )}
                       </Message>
                     </Fragment>
                   ),
