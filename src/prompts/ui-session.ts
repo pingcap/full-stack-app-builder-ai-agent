@@ -33,7 +33,7 @@ Help user to generate the meta fields and first prompt:
   - OPENAI_API_KEY: the OpenAI API key to access OpenAI API
 - Append original user prompt to the end to prevent misunderstanding.
 - MCP Tools available, use if needed:
-  - nextjs devtools mcp - to debug dev service
+  - nextjs devtools mcp - if you want to use it, read https://nextjs.org/docs/app/guides/mcp for more details
   - shadcn mcp tools to get shadcn/ui registries and component examples if you are confused.
 `;
 
