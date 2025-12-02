@@ -85,6 +85,8 @@ async function createBranch(clusterId, displayName, publicKey, privateKey) {
   - `DATABASE_URL`
   - `OPENAI_API_KEY`
   - `TIDB_CLOUD_REGION`, `TIDB_CLOUD_DATABASE_ENDPOINT`
+  - Optional: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (to enable Google login)
+  - Optional: `GOOGLE_ALLOWED_DOMAIN` to restrict Google logins
 
 ## Setup
 ```bash
