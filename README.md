@@ -27,6 +27,10 @@ An open-source starter kit using TiDB Cloud, Vercel, Kysely, and GitHub. Think o
 - **Auth & protection** (`src/proxy.ts`, `src/lib/auth*`) gate `/projects`, `/settings`, and API v1 routes.
 
 ## How It Works (End-to-End)
+<p align="center">
+  <img alt="End-to-end user flow: prompt to plan, provision, generate, migrate, deploy, and iterate" src="./public/userflow.png" width="960" />
+</p>
+
 1. **Prompt** – “Build a todo app.”  
 2. **Plan** – Model drafts an execution plan.  
 3. **Provision** – Create TiDB cluster/branch, Vercel sandbox, GitHub repo/branch, and env vars.  
