@@ -67,7 +67,9 @@ export async function generateUISessionStep1({
         .string()
         .min(4)
         .max(32)
-        .describe("The url slug for this project, use kebab-case"),
+        .describe(
+          "The url slug for this project, (4~32 characters) use kebab-case",
+        ),
       title: z.string().describe("The title of this project"),
     }),
     messages: [{ role: "user", content: userPrompt }],
@@ -97,7 +99,11 @@ export async function generateUISessionStep2({
         .min(4)
         .max(32)
         .describe("use kebab-case"),
-      vercel_project_name: z.string().min(4).max(32).describe("use kebab-case"),
+      vercel_project_name: z
+        .string()
+        .min(4)
+        .max(32)
+        .describe("4~32 characters, use kebab-case"),
       tidbcloud_cluster_name: z
         .string()
         .describe("The new Vercel project name. use kebab-case"),
