@@ -5,9 +5,6 @@
 # How to Build an AI Agent that Builds Full-Stack Apps
 An open-source starter kit using TiDB Cloud, Vercel, Kysely, and GitHub. Think of this as a minimal, self-hostable cousin of [Lovable.dev](https://lovable.dev/) that you fully own and control.
 
-## Demo
-- Watch the end-to-end walkthrough (MP4): https://static.pingcap.com/files/2025/12/01002123/full-stack-app-builder-ai-agent.mp4
-
 > Describe an app and this agent provisions GitHub + TiDB Cloud + Vercel, codes with [Codex (gpt-5.1-codex)](https://openai.com/codex/) and [Claude Code (claude-sonnet-4.5)](https://www.claude.com/product/claude-code), tests, deploys, and streams the whole session. The code is public at https://github.com/pingcap/full-stack-app-builder-ai-agent.
 
 ## What This Agent Can Do
