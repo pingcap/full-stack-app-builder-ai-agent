@@ -179,6 +179,15 @@ export default function Page() {
               >
                 How it works
               </a>
+              <span className="mx-2 text-muted-foreground/70">•</span>
+              <a
+                className="underline underline-offset-2 hover:text-foreground"
+                href="https://www.youtube.com/watch?v=kyWZzj57wwY"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Demo video
+              </a>
             </p>
           </div>
         </div>
