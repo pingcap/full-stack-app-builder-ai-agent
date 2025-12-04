@@ -8,6 +8,7 @@ An open-source starter kit using TiDB Cloud, Vercel, Kysely, and GitHub. Think o
 > Describe an app and this agent provisions GitHub + TiDB Cloud + Vercel, codes with [Codex (gpt-5.1-codex)](https://openai.com/codex/) and [Claude Code (claude-sonnet-4.5)](https://www.claude.com/product/claude-code), tests, deploys, and streams the whole session.
 
 - Demo video: https://www.youtube.com/watch?v=kyWZzj57wwY
+- Blog post: https://www.pingcap.com/blog/ai-agent-that-builds-full-stack-apps/
 
 ## What This Agent Can Do
 - Generate complete web apps from a prompt (Next.js 16 + shadcn/Tailwind).
