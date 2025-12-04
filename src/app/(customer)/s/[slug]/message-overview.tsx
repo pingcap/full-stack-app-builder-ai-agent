@@ -10,7 +10,7 @@ import type {
   UITools,
 } from "ai";
 import type { Selectable } from "kysely";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Streamdown } from "streamdown";
 import type { UISessionData } from "@/app/(customer)/s/[slug]/query";
 import { Loader } from "@/components/ai-elements/loader";
@@ -127,7 +127,12 @@ export function MessageOverview({
     <>
       {task_revision.status === "running" && (
         <MessageContent>
-          <Loader />
+          <div className="inline-flex items-center gap-2">
+            <Loader />
+            <TimeElapsed
+              startedAt={task_revision.started_at ?? task_revision.created_at}
+            />
+          </div>
         </MessageContent>
       )}
       {task_revision.status === "interrupted" && (
@@ -157,6 +162,44 @@ export function MessageOverview({
       )}
     </>
   );
+}
+
+function TimeElapsed({
+  startedAt,
+}: {
+  startedAt: Date | string | null;
+}) {
+  const startMs = startedAt ? new Date(startedAt).getTime() : Date.now();
+  const [elapsedMs, setElapsedMs] = useState<number | null>(null);
+
+  useEffect(() => {
+    setElapsedMs(Math.max(0, Date.now() - startMs));
+    const id = setInterval(() => {
+      setElapsedMs(Math.max(0, Date.now() - startMs));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [startMs]);
+
+  return (
+    <span className="text-xs text-muted-foreground" suppressHydrationWarning>
+      Time elapsed: {elapsedMs == null ? "…" : formatDuration(elapsedMs)}
+    </span>
+  );
+}
+
+function formatDuration(ms: number) {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m ${seconds}s`;
+  }
+  if (minutes > 0) {
+    return `${minutes}m ${seconds}s`;
+  }
+  return `${seconds}s`;
 }
 
 function CodexOverviewContent({

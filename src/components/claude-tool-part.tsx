@@ -370,7 +370,9 @@ export function ClaudeTodoList({
         >
           <div className="flex items-center gap-2">
             <QueueItemIndicator completed={todo.status === "completed"} />
-            <QueueItemContent>{todo.content}</QueueItemContent>
+            <QueueItemContent completed={todo.status === "completed"}>
+              {todo.content}
+            </QueueItemContent>
           </div>
         </QueueItem>
       ))}

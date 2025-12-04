@@ -36,10 +36,11 @@ export function SessionTaskRevisionPreview({
   const { data: sandboxUrl, isLoading: isSandboxLoading } =
     useSandboxPortUrl(revision);
 
-  const { errorTitle, errorMessage, url } = useMemo((): {
+  const { errorTitle, errorMessage, url, isLoadingPlaceholder } = useMemo((): {
     errorTitle: string | undefined;
     errorMessage: string | undefined;
     url: string;
+    isLoadingPlaceholder: boolean;
   } => {
     if (deployment) {
       switch (deployment.readyState) {
@@ -48,36 +49,42 @@ export function SessionTaskRevisionPreview({
             errorTitle: "No deployment available.",
             errorMessage: "The preview environment deployment was canceled.",
             url: "",
+            isLoadingPlaceholder: false,
           };
         case ReadyState.Error:
           return {
             errorTitle: "Failed to deploy.",
             errorMessage: `${deployment.errorCode}: ${deployment.errorMessage}.`,
             url: "",
+            isLoadingPlaceholder: false,
           };
         case ReadyState.Ready:
           return {
             errorTitle: undefined,
             errorMessage: undefined,
             url: `https://${deployment.url}`,
+            isLoadingPlaceholder: false,
           };
         case ReadyState.Building:
           return {
             errorTitle: "Deployment is not ready",
             errorMessage: "The deployment is still being built.",
             url: "",
+            isLoadingPlaceholder: true,
           };
         case ReadyState.Initializing:
           return {
             errorTitle: "Deployment is not ready",
             errorMessage: "The deployment is still being initialized.",
             url: "",
+            isLoadingPlaceholder: true,
           };
         case ReadyState.Queued:
           return {
             errorTitle: "Deployment is not ready",
             errorMessage: "The deployment is still queued.",
             url: "",
+            isLoadingPlaceholder: true,
           };
       }
     } else if (sandboxUrl) {
@@ -85,24 +92,28 @@ export function SessionTaskRevisionPreview({
         url: sandboxUrl,
         errorTitle: undefined,
         errorMessage: undefined,
+        isLoadingPlaceholder: false,
       };
     } else if (isDeploymentLoading || revision?.vercel_deployment_id != null) {
       return {
         url: "",
         errorTitle: "Loading deployment status...",
         errorMessage: "Please wait for a while.",
+        isLoadingPlaceholder: true,
       };
     } else if (isSandboxLoading || revision?.vercel_sandbox_id != null) {
       return {
         url: "",
         errorTitle: "Loading sandbox status...",
         errorMessage: "Please wait for a while.",
+        isLoadingPlaceholder: true,
       };
     } else {
       return {
         url: "",
         errorTitle: "No preview or deployment available.",
         errorMessage: "No URL to preview.",
+        isLoadingPlaceholder: false,
       };
     }
   }, [
@@ -149,15 +160,28 @@ export function SessionTaskRevisionPreview({
         errorMessage != null ||
         deploymentLog.length > 0 ? (
           <>
-            {(errorTitle != null || errorMessage != null) && (
-              <Alert>
-                <AlertCircleIcon />
-                {errorTitle && <AlertTitle>{errorTitle}</AlertTitle>}
-                {errorMessage && (
-                  <AlertDescription>{errorMessage}</AlertDescription>
-                )}
+            {(errorTitle != null || errorMessage != null) &&
+            (isLoadingPlaceholder ||
+              errorTitle === "No preview or deployment available.") ? (
+              <div className="text-sm text-muted-foreground">
+                {errorTitle && <div>{errorTitle}</div>}
+                {errorMessage && <div>{errorMessage}</div>}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+                <div className="flex items-start gap-2">
+                  <AlertCircleIcon className="mt-0.5 h-4 w-4" />
+                  <div className="space-y-1">
+                    {errorTitle && (
+                      <div className="font-medium text-foreground">
+                        {errorTitle}
+                      </div>
+                    )}
+                    {errorMessage && <div>{errorMessage}</div>}
+                  </div>
+                </div>
                 {deploymentLog.length > 0 && (
-                  <div className="col-start-2 flex items-center gap-2 mt-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     {previewIndex === session.task_revisions.length - 1 && (
                       <Button
                         size="sm"
@@ -215,7 +239,7 @@ Help me to fix the bugs.
                     )}
                   </div>
                 )}
-              </Alert>
+              </div>
             )}
             {deploymentLog.length > 0 && (
               <div className="flex-1 w-full overflow-hidden">

@@ -18,7 +18,9 @@ export function PreviewIndexProvider({
   session: UISessionData;
   children: ReactNode;
 }) {
-  const [index, setIndex] = useState<number>(-1);
+  const [index, setIndex] = useState<number>(
+    session.task_revisions.length - 1,
+  );
   useEffect(() => {
     setIndex(session.task_revisions.length - 1);
   }, [session.task_revisions.length]);
