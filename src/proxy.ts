@@ -1,10 +1,5 @@
-import type { NextRequest } from "next/server";
-import withAuth from "next-auth/middleware";
-import authOptions from "@/lib/auth-options";
-
-const handler = withAuth({
-  pages: authOptions.pages,
-});
+import { type NextRequest, NextResponse } from "next/server";
+import { getSession } from "@/lib/auth";
 
 export default async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
@@ -15,9 +10,17 @@ export default async function proxy(request: NextRequest) {
     path.startsWith("/debug/") ||
     path.startsWith("/projects/") ||
     path.startsWith("/settings/") ||
-    path.startsWith("/s/")
+    path.startsWith("/s/") ||
+    path.startsWith("/admin/")
   ) {
-    return handler(request as never, null as never);
+    const session = await getSession();
+    // THIS IS NOT SECURE!
+    // This is the recommended approach to optimistically redirect users
+    // We recommend handling auth checks in each page/route
+    if (!session) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+    return NextResponse.next();
   }
 }
 

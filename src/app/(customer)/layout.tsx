@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset } from "@/components/ui/sidebar";
+import { getSessionUser } from "@/lib/auth";
 import db from "@/lib/db/db";
 import { getAll } from "@/lib/kysely-utils";
 
@@ -9,7 +10,12 @@ export default async function MainLayout({
 }: {
   children: ReactNode;
 }) {
-  const sessions = await getAll(db, "ui_session", {}, ["created_at", "desc"]);
+  const user = await getSessionUser();
+  if (!user) return null;
+  const sessions = await getAll(db, "ui_session", { user_id: user.id }, [
+    "created_at",
+    "desc",
+  ]);
 
   return (
     <>

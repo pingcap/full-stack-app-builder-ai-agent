@@ -2,14 +2,16 @@ import { convertArrayToReadableStream } from "@ai-sdk/provider-utils/test";
 import { readUIMessageStream } from "ai";
 import { kebabCase } from "change-case";
 import { sql } from "kysely";
+import { unauthorized } from "next/navigation";
 import { createProjectStreamed } from "@/actions/projects";
 import { createTaskRevision } from "@/actions/task-revisions";
 import { createTask } from "@/actions/tasks";
 import { raceYieldFromAsyncIterators } from "@/lib/async-generators";
-import { getSessionUserSettings } from "@/lib/auth";
+import { getSessionUser } from "@/lib/auth";
 import db from "@/lib/db/db";
 import { getErrorMessage } from "@/lib/errors";
 import { get, insert, update } from "@/lib/kysely-utils";
+import { getSiteSettings } from "@/lib/system-settings";
 import { isGitHubSettingsValid } from "@/lib/user-settings/github";
 import {
   generateUISessionStep1,
@@ -55,7 +57,12 @@ export async function* createUISession({
   async function* _create(): AsyncGenerator<
     UISessionMessageChunk | UISessionMessageChunk[]
   > {
-    const settings = await getSessionUserSettings();
+    const user = await getSessionUser();
+    const settings = await getSiteSettings();
+
+    if (!user) {
+      unauthorized();
+    }
 
     if (!settings) {
       throw new Error("Settings are invalid.");
@@ -75,7 +82,7 @@ export async function* createUISession({
       slug,
       title: step1.title,
       logs: "[]",
-      user_id: settings.user_id,
+      user_id: user.id,
       created_at: new Date(),
       updated_at: new Date(),
     });
@@ -219,7 +226,7 @@ export async function* createUISession({
           project_id: projectId,
           parent_task_id: null,
           parent_task_revision_ordinal: null,
-          user_id: settings.user_id,
+          user_id: user.id,
         }).then(async (task) => {
           await update(
             db,

@@ -1,11 +1,10 @@
-import type { DB } from "@/lib/db/schema";
 import { Vercel } from "@vercel/sdk";
-import type { Selectable } from "kysely";
 import { cache } from "react";
+import type { SiteSettings } from "@/lib/system-settings";
 
 export function isVercelSettingsValid(
-  settings: Selectable<DB["user_setting"]> | undefined | null,
-): settings is Selectable<DB["user_setting"]> & {
+  settings: SiteSettings | undefined | null,
+): settings is SiteSettings & {
   vercel_token: string;
   vercel_blob_team_id: string;
   vercel_blob_storage_id: string;

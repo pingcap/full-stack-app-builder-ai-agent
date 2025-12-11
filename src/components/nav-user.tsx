@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronsUpDown, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -15,16 +16,9 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import type { DB } from "@/lib/db/schema";
-import type { Selectable } from "kysely";
-import { ChevronsUpDown, LogOut } from "lucide-react";
-import { signOut } from "next-auth/react";
+import type { SessionUser } from "@/lib/auth-common";
 
-export function NavUser({
-  user,
-}: {
-  user: Omit<Selectable<DB["user"]>, "password">;
-}) {
+export function NavUser({ user }: { user: SessionUser }) {
   const { isMobile } = useSidebar();
 
   return (
@@ -37,8 +31,10 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar_url} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarImage src={user.image ?? ""} alt={user.name} />
+                <AvatarFallback className="rounded-lg">
+                  {user.name[0]}
+                </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
@@ -56,12 +52,12 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar_url} alt={user.name} />
+                  <AvatarImage src={user.image ?? ""} alt={user.name} />
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate text-xs"> {user.name[0]}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
@@ -93,7 +89,9 @@ export function NavUser({
                 type="button"
                 className="flex w-full items-center gap-2"
                 onClick={() => {
-                  void signOut({ callbackUrl: "/login", redirect: true });
+                  fetch("/api/auth/sign-out").finally(() => {
+                    window.location.href = "/login";
+                  });
                 }}
               >
                 <LogOut />

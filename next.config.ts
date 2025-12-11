@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "": ["./src/migrations/*.ts"],
   },
+  experimental: {
+    authInterrupts: true,
+  },
 };
 
 export default nextConfig;

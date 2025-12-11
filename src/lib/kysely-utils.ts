@@ -56,6 +56,22 @@ export async function get<TB extends keyof DB & string>(
     .executeTakeFirstOrThrow()) as Selectable<DB[TB]>;
 }
 
+export async function find<TB extends keyof DB & string>(
+  db: QueryCreator<DB>,
+  table: TB,
+  expression: ExpressionOrFactory<DB, TB, SqlBool> | FilterObject<DB, TB>,
+) {
+  return (await db
+    .selectFrom(table as keyof DB & string)
+    .selectAll()
+    .where(
+      typeof expression === "object"
+        ? (eb) => eb.and(expression as never)
+        : (expression as never),
+    )
+    .executeTakeFirst()) as Selectable<DB[TB]>;
+}
+
 export async function getAll<TB extends keyof DB & string>(
   db: QueryCreator<DB>,
   table: TB,

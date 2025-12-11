@@ -1,9 +1,10 @@
 import { validateOpenaiApiKey } from "@/actions/user-settings";
 import { OpenaiApiKeySetup } from "@/components/openai-api-key-setup";
-import { getSessionUserSettings } from "@/lib/auth";
+
+import { getSiteSettings } from "@/lib/system-settings";
 
 export default async function Page() {
-  const settings = await getSessionUserSettings();
+  const settings = await getSiteSettings();
   const result = await validateOpenaiApiKey(undefined);
 
   return (

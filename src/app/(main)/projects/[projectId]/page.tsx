@@ -13,9 +13,9 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item";
-import { getSessionUserSettings } from "@/lib/auth";
 import db from "@/lib/db/db";
 import { get } from "@/lib/kysely-utils";
+import { getSiteSettings } from "@/lib/system-settings";
 import {
   getGitHubClient,
   isGitHubSettingsValid,
@@ -62,7 +62,7 @@ async function GitHubRepoInfo({
   owner: string;
   repo: string;
 }) {
-  const settings = await getSessionUserSettings();
+  const settings = await getSiteSettings();
   if (!isGitHubSettingsValid(settings)) {
     return (
       <Alert variant="destructive">
@@ -124,7 +124,7 @@ async function VercelProjectInfo({
   teamId: string;
   token: string;
 }) {
-  const settings = await getSessionUserSettings();
+  const settings = await getSiteSettings();
   if (!isVercelSettingsValid(settings)) {
     return (
       <Alert variant="destructive">

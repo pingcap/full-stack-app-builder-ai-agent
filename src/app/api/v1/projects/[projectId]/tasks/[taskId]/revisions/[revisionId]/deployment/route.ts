@@ -2,9 +2,9 @@ import { Vercel } from "@vercel/sdk";
 import type { CreateCustomEnvironmentResponseBody } from "@vercel/sdk/models/createcustomenvironmentop";
 import type { GetCustomEnvironmentResponseBody } from "@vercel/sdk/models/getcustomenvironmentop";
 import { type NextRequest, NextResponse } from "next/server";
-import { getSessionUserSettings } from "@/lib/auth";
 import db from "@/lib/db/db";
 import { get, update } from "@/lib/kysely-utils";
+import { getSiteSettings } from "@/lib/system-settings";
 
 export async function POST(
   req: NextRequest,
@@ -14,7 +14,7 @@ export async function POST(
     params: Promise<{ projectId: string; taskId: string; revisionId: string }>;
   },
 ) {
-  const settings = await getSessionUserSettings();
+  const settings = await getSiteSettings();
 
   if (!settings) {
     return NextResponse.json({

@@ -1,8 +1,8 @@
 import { Sandbox } from "@vercel/sandbox";
 import ms from "ms";
-import { getSessionUserSettings } from "@/lib/auth";
 import db from "@/lib/db/db";
 import { get, update } from "@/lib/kysely-utils";
+import { getSiteSettings } from "@/lib/system-settings";
 import { generateSessionId } from "@/lib/tasks";
 import { isGitHubSettingsValid } from "@/lib/user-settings/github";
 import { isVercelSettingsValid } from "@/lib/user-settings/vercel";
@@ -13,7 +13,7 @@ export async function createSandbox(
   taskId: number,
   taskRevisionId: number,
 ) {
-  const settings = await getSessionUserSettings();
+  const settings = await getSiteSettings();
 
   if (!isGitHubSettingsValid(settings)) {
     throw new Error("GitHub settings are invalid");
@@ -41,7 +41,7 @@ export async function createSandbox(
   }
 
   for await (const event of startSandbox({
-    user_id: settings.user_id,
+    user_id: project.user_id,
     coding_agent_type: project.coding_agent_type as never,
     session: generateSessionId(projectId, taskId, taskRevisionId),
     lastSession,
@@ -64,7 +64,6 @@ export async function createSandbox(
     stdout: process.stdout,
     stderr: process.stderr,
   })) {
-    console.log(event);
     switch (event.type) {
       case "created":
         await db.transaction().execute(async (trx) => {

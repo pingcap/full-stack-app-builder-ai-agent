@@ -4,10 +4,11 @@ import type { Endpoints } from "@octokit/types";
 import type { AuthUser } from "@vercel/sdk/models/authuser";
 import type { AuthUserLimited } from "@vercel/sdk/models/authuserlimited";
 import { refresh } from "next/cache";
-import { getSessionUser, getSessionUserSettings } from "@/lib/auth";
+import { getSessionUser } from "@/lib/auth";
 import db from "@/lib/db/db";
 import { getErrorMessage, handleFetchResponseError } from "@/lib/errors";
 import { update } from "@/lib/kysely-utils";
+import { getSiteSettings, updateSiteSettings } from "@/lib/system-settings";
 import { type AccessKeyInfo, getAccessKeyInfo } from "@/lib/tidbcloud/sdk";
 import {
   getGitHubClient,
@@ -42,15 +43,10 @@ export async function setGithubToken(formData: FormData) {
     return result;
   }
 
-  await update(
-    db,
-    "user_setting",
-    {
-      github_token: token,
-      github_login: result.login,
-    },
-    { user_id: user.id },
-  );
+  await updateSiteSettings({
+    github_token: token,
+    github_login: result.login,
+  });
 
   refresh();
 
@@ -76,14 +72,9 @@ export async function setVercelToken(formData: FormData) {
     return result;
   }
 
-  await update(
-    db,
-    "user_setting",
-    {
-      vercel_token: token,
-    },
-    { user_id: user.id },
-  );
+  await updateSiteSettings({
+    vercel_token: token,
+  });
 
   refresh();
 
@@ -111,16 +102,11 @@ export async function setVercelBlobStorage(formData: FormData) {
     vercel_blob_storage_id,
   );
 
-  await update(
-    db,
-    "user_setting",
-    {
-      vercel_blob_team_id,
-      vercel_blob_storage_id,
-      vercel_blob_storage_rw_token: rwToken,
-    },
-    { user_id: user.id },
-  );
+  await updateSiteSettings({
+    vercel_blob_team_id,
+    vercel_blob_storage_id,
+    vercel_blob_storage_rw_token: rwToken,
+  });
 
   refresh();
 }
@@ -138,14 +124,10 @@ export async function setVercelDefaultProjectTeam(formData: FormData) {
   if (typeof default_vercel_project_team_id !== "string") {
     return "Invalid input.";
   }
-  await update(
-    db,
-    "user_setting",
-    {
-      default_vercel_project_team_id,
-    },
-    { user_id: user.id },
-  );
+
+  await updateSiteSettings({
+    default_vercel_project_team_id,
+  });
 
   refresh();
 }
@@ -184,17 +166,12 @@ export async function setTidbCloudAccessKey(formData: FormData) {
 
   const [_, orgId, projectId] = matched;
 
-  await update(
-    db,
-    "user_setting",
-    {
-      tidbcloud_public_key,
-      tidbcloud_private_key,
-      tidbcloud_organization_id: orgId,
-      tidbcloud_project_id: projectId,
-    },
-    { user_id: user.id },
-  );
+  await updateSiteSettings({
+    tidbcloud_public_key,
+    tidbcloud_private_key,
+    tidbcloud_organization_id: orgId,
+    tidbcloud_project_id: projectId,
+  });
 
   refresh();
 
@@ -217,14 +194,9 @@ export async function setOpenaiApiKey(formData: FormData) {
     return result;
   }
 
-  await update(
-    db,
-    "user_setting",
-    {
-      openai_api_key: token,
-    },
-    { user_id: user.id },
-  );
+  await updateSiteSettings({
+    openai_api_key: token,
+  });
 
   refresh();
 
@@ -235,7 +207,7 @@ export async function validateGitHubToken(
   token?: string | undefined | null,
 ): Promise<GithubUserResponse | string> {
   if (!token) {
-    const sessionUserSettings = await getSessionUserSettings();
+    const sessionUserSettings = await getSiteSettings();
 
     if (isGitHubSettingsValid(sessionUserSettings)) {
       token = sessionUserSettings.github_token;
@@ -259,7 +231,7 @@ export async function validateVercelToken(
   token?: string | undefined | null,
 ): Promise<AuthUser | AuthUserLimited | string> {
   if (!token) {
-    const sessionUserSettings = await getSessionUserSettings();
+    const sessionUserSettings = await getSiteSettings();
 
     if (isGitHubSettingsValid(sessionUserSettings)) {
       token = sessionUserSettings.vercel_token;
@@ -285,7 +257,7 @@ export async function validateTidbCloudAccessKey(
   privateKey?: string | undefined | null,
 ): Promise<AccessKeyInfo | string> {
   if (!publicKey && !privateKey) {
-    const settings = await getSessionUserSettings();
+    const settings = await getSiteSettings();
     publicKey = settings?.tidbcloud_public_key;
     privateKey = settings?.tidbcloud_private_key;
   }
@@ -309,7 +281,7 @@ export async function validateTidbCloudAccessKey(
 export async function validateOpenaiApiKey(token?: string | null) {
   try {
     if (!token) {
-      const sessionUserSettings = await getSessionUserSettings();
+      const sessionUserSettings = await getSiteSettings();
 
       if (isGitHubSettingsValid(sessionUserSettings)) {
         token = sessionUserSettings.openai_api_key;

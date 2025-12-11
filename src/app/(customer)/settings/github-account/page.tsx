@@ -1,9 +1,10 @@
 import { validateGitHubToken } from "@/actions/user-settings";
 import { GithubAccountSettings } from "@/components/github-account-settings";
-import { getSessionUserSettings } from "@/lib/auth";
+
+import { getSiteSettings } from "@/lib/system-settings";
 
 export default async function Page() {
-  const settings = await getSessionUserSettings();
+  const settings = await getSiteSettings();
   const result = await validateGitHubToken(undefined);
 
   return (

@@ -1,10 +1,15 @@
+import { Kysely, MysqlDialect } from "kysely";
+import { createPool } from "mysql2";
 import type { DB } from "@/lib/db/schema";
-import { TiDBServerlessDialect } from "@tidbcloud/kysely";
-import { Kysely } from "kysely";
 
 const db = new Kysely<DB>({
-  dialect: new TiDBServerlessDialect({
-    url: process.env.DATABASE_URL,
+  dialect: new MysqlDialect({
+    pool: createPool({
+      uri: process.env.DATABASE_URL!,
+      ssl: {
+        rejectUnauthorized: true,
+      },
+    }),
   }),
 });
 

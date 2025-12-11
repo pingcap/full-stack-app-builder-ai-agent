@@ -7,11 +7,12 @@ import { after, NextResponse } from "next/server";
 import { quote } from "shell-quote";
 import { createTiDBCloudBranch } from "@/actions/tidbcloud";
 import { createSandbox } from "@/actions/vercel";
-import { getSessionUser, getSessionUserSettings } from "@/lib/auth";
+import { getSessionUser } from "@/lib/auth";
 import db from "@/lib/db/db";
 import type { DB } from "@/lib/db/schema";
 import { getErrorMessage } from "@/lib/errors";
 import { get, getAll, insert, update } from "@/lib/kysely-utils";
+import { getSiteSettings } from "@/lib/system-settings";
 import { generateSessionId } from "@/lib/tasks";
 
 type CreateTaskRevisionParams = Pick<
@@ -22,7 +23,7 @@ type CreateTaskRevisionParams = Pick<
 };
 
 export async function createTaskRevision(params: CreateTaskRevisionParams) {
-  const settings = await getSessionUserSettings();
+  const settings = await getSiteSettings();
   const user = await getSessionUser();
 
   const task = await get(db, "task", { id: params.task_id });
@@ -151,7 +152,7 @@ call_finish_hook
           HOOK_AUTH_TOKEN: process.env.HOOK_AUTH_TOKEN!,
           VERCEL_TOKEN: settings?.vercel_token!,
           BLOB_READ_WRITE_TOKEN: settings?.vercel_blob_storage_rw_token!,
-          USER_ID: String(settings?.user_id!),
+          USER_ID: String(task?.user_id!),
           ANTHROPIC_BASE_URL: "https://cr.breeswish.org/api",
           ANTHROPIC_AUTH_TOKEN: process.env.CRS_OAI_KEY!,
         },
@@ -260,7 +261,7 @@ export async function deployTask(
   const project = await get(db, "project", { id: projectId });
   const task = await get(db, "task", { id: taskId });
   const taskRevision = await get(db, "task_revision", { id: taskRevisionId });
-  const settings = await get(db, "user_setting", { user_id: project.user_id });
+  const settings = await getSiteSettings();
 
   if (!taskRevision.git_commit_sha) {
     await update(

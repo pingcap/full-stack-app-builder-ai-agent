@@ -2,10 +2,11 @@ import { validateVercelToken } from "@/actions/user-settings";
 import { VercelBlobStorageSetup } from "@/components/vercel-blob-storage-setup";
 import { VercelDefaultProjectTeamSetup } from "@/components/vercel-default-project-team-setup";
 import { VercelTokenSetup } from "@/components/vercel-token-setup";
-import { getSessionUserSettings } from "@/lib/auth";
+
+import { getSiteSettings } from "@/lib/system-settings";
 
 export default async function Page() {
-  const settings = await getSessionUserSettings();
+  const settings = await getSiteSettings();
   const result = await validateVercelToken(settings?.vercel_token);
 
   return (

@@ -1,8 +1,8 @@
-import { getSessionUserSettings } from "@/lib/auth";
 import type { Pagination } from "@vercel/sdk/models/pagination";
+import { getSiteSettings } from "@/lib/system-settings";
 
 export async function getValidSessionUserVercelToken() {
-  const userSettings = await getSessionUserSettings();
+  const userSettings = await getSiteSettings();
 
   return userSettings?.vercel_token;
 }
@@ -14,7 +14,7 @@ export async function getAllPages<Key extends string, T>(
   }) => Promise<{ pagination: Pagination } & { [P in Key]: T[] }>,
   key: Key,
 ) {
-  let since: number | undefined = undefined;
+  let since: number | undefined;
   const limit = 100;
   const results: T[] = [];
 
@@ -24,7 +24,9 @@ export async function getAllPages<Key extends string, T>(
       since,
     });
 
-    page[key].forEach((result) => results.push(result));
+    page[key].forEach((result) => {
+      results.push(result);
+    });
     if (page.pagination.next == null) return results;
     since = page.pagination.next;
   }

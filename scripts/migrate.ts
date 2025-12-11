@@ -1,20 +1,21 @@
-import { TiDBServerlessDialect } from "@tidbcloud/kysely";
+import * as fs from "node:fs";
+import path from "node:path";
 import chalk from "chalk";
 import {
   FileMigrationProvider,
   Kysely,
   type MigrationResultSet,
   Migrator,
+  MysqlDialect,
 } from "kysely";
 import {
-  generate,
   GeneratorDialect,
+  generate,
   Logger,
   MysqlAdapter,
   MysqlIntrospector,
 } from "kysely-codegen";
-import * as fs from "node:fs";
-import path from "node:path";
+import { createPool } from "mysql2";
 
 const dirname = import.meta.dirname;
 
@@ -24,8 +25,13 @@ if (process.argv[2] === "init") {
   url.pathname = "";
   const dbUrl = url.toString();
 
-  const initDialect = new TiDBServerlessDialect({
-    url: dbUrl,
+  const initDialect = new MysqlDialect({
+    pool: createPool({
+      uri: dbUrl,
+      ssl: {
+        rejectUnauthorized: true,
+      },
+    }),
   });
 
   const db = new Kysely({
@@ -38,8 +44,13 @@ if (process.argv[2] === "init") {
   process.exit(0);
 }
 
-const dialect = new TiDBServerlessDialect({
-  url: process.env.DATABASE_URL,
+const dialect = new MysqlDialect({
+  pool: createPool({
+    uri: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: true,
+    },
+  }),
 });
 
 const db = new Kysely({
@@ -89,7 +100,7 @@ switch (process.argv[2]) {
 }
 
 if (result.results) {
-  for (let item of result.results) {
+  for (const item of result.results) {
     let logStr = `${item.direction === "Up" ? "[up]" : "[down]"} ${item.migrationName} `;
     if (item.status === "Success") {
       logStr = chalk.green(`✓ ${logStr}`);

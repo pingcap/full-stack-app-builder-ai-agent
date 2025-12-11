@@ -1,14 +1,16 @@
 import { randomUUID } from "node:crypto";
-import { connect } from "@tidbcloud/serverless";
 import { kebabCase } from "change-case";
 import type { Insertable } from "kysely";
+import { createConnection } from "mysql2/promise";
+import { unauthorized } from "next/navigation";
 import { Octokit } from "octokit";
 import { raceYieldFromAsyncIterators } from "@/lib/async-generators";
-import { getSessionUserSettings } from "@/lib/auth";
+import { getSessionUser } from "@/lib/auth";
 import db from "@/lib/db/db";
 import type { DB } from "@/lib/db/schema";
 import { getErrorMessage } from "@/lib/errors";
 import { insert, update } from "@/lib/kysely-utils";
+import { getSiteSettings } from "@/lib/system-settings";
 import {
   createCluster,
   getCluster,
@@ -80,9 +82,11 @@ export async function* createProjectStreamed({
   vercel_project_name = vercel_project_name ?? normalizedName;
   tidbcloud_cluster_name = tidbcloud_cluster_name ?? normalizedName;
 
-  const settings = await getSessionUserSettings();
-  if (!settings) {
-    throw new Error("Invalid user settings.");
+  const user = await getSessionUser();
+  const settings = await getSiteSettings();
+
+  if (!user) {
+    unauthorized();
   }
 
   if (!isGitHubSettingsValid(settings)) {
@@ -140,7 +144,7 @@ export async function* createProjectStreamed({
   yield { type: "creating-db-project" };
 
   const project = await insert(db, "project", {
-    user_id: settings.user_id,
+    user_id: user.id,
     name,
     description,
     github_repo: github_repository_name,
@@ -272,8 +276,9 @@ async function* prepareClusterStreamed(
   yield { type: "connecting-cluster" };
 
   // Create the default database
-  const clusterDb = connect({
-    url: baseConnectionUrl,
+  const clusterDb = await createConnection({
+    uri: baseConnectionUrl,
+    ssl: { rejectUnauthorized: true },
   });
   await clusterDb.execute(`CREATE DATABASE IF NOT EXISTS ${database}`);
 

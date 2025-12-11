@@ -16,7 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { getSessionUserSettings } from "@/lib/auth";
+import { getSiteSettings } from "@/lib/system-settings";
 import { listBranches } from "@/lib/tidbcloud/sdk";
 import { isTiDBCloudSettingsValid } from "@/lib/user-settings/tidbcloud";
 
@@ -76,7 +76,7 @@ export async function SessionProjectLinks({
 }: {
   session: UISessionData;
 }) {
-  const settings = await getSessionUserSettings();
+  const settings = await getSiteSettings();
 
   const project = session.project_id
     ? await getProject(session.project_id)
@@ -110,12 +110,16 @@ export async function SessionProjectLinks({
             ? {
                 sha: rev.git_commit_sha,
                 message:
-                  rev.user_prompt ?? rev.prompt ?? rev.git_commit_sha.slice(0, 7),
+                  rev.user_prompt ??
+                  rev.prompt ??
+                  rev.git_commit_sha.slice(0, 7),
                 url: `https://github.com/${project.github_owner}/${project.github_repo}/commit/${rev.git_commit_sha}`,
               }
             : null,
         )
-        .filter((c): c is { sha: string; message: string; url: string } => Boolean(c)),
+        .filter((c): c is { sha: string; message: string; url: string } =>
+          Boolean(c),
+        ),
     },
   ];
 

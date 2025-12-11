@@ -14,8 +14,8 @@ Next.js App Router screens live in `src/app`, with each route folder owning its 
 ## Tech Stack & Libraries
 - Runtime: Next.js App Router (v16) on React 19 with TypeScript 5 ESM; strict mode stays on (`tsconfig.json` sets `strict: true`, `moduleResolution: bundler`).
 - Styling: Tailwind CSS v4 via `@tailwindcss/postcss`; merge utilities with `tailwind-merge` and keep primitives in `src/components/ui` (Radix + shadcn patterns powered by `class-variance-authority`, `clsx`).
-- Data & state: TanStack Query for server data, TanStack React Form for inputs, Kysely against TiDB (`@tidbcloud/serverless`) with `kysely-codegen`-backed schemas; prefer `@/lib` clients and `src/actions` for server mutations.
-- Auth & sessions: `next-auth` with theme handling via `next-themes`; cache/session helpers live in `src/lib`.
+- Data & state: TanStack Query for server data, TanStack React Form for inputs, Kysely against TiDB with `kysely-codegen`-backed schemas; prefer `@/lib` clients and `src/actions` for server mutations.
+- Auth & sessions: `better-auth` with theme handling via `next-themes`; cache/session helpers live in `src/lib`.
 - AI & DX: Vercel AI SDK (`ai` + `@ai-sdk/openai`/`@anthropic-ai/sdk`) for model calls, shiki for syntax, framer-motion/motion for animation, xyflow/embla for canvas/flows, and Upstash Redis for lightweight persistence.
 
 ## Coding Style & Naming Conventions

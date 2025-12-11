@@ -3,11 +3,11 @@ import { SDKError } from "@vercel/sdk/models/sdkerror";
 import type { Selectable } from "kysely";
 import { NextResponse } from "next/server";
 import { Octokit } from "octokit";
-import { getSessionUserSettings } from "@/lib/auth";
 import db from "@/lib/db/db";
 import type { DB } from "@/lib/db/schema";
 import { getErrorMessage } from "@/lib/errors";
 import { get, omit, update } from "@/lib/kysely-utils";
+import { getSiteSettings } from "@/lib/system-settings";
 import { deleteCluster } from "@/lib/tidbcloud/sdk";
 import { isGitHubSettingsValid } from "@/lib/user-settings/github";
 import { isTiDBCloudSettingsValid } from "@/lib/user-settings/tidbcloud";
@@ -134,7 +134,7 @@ async function deleteTidbcloudCluster(project: Selectable<DB["project"]>) {
     return;
   }
 
-  const settings = await getSessionUserSettings();
+  const settings = await getSiteSettings();
   if (!settings) {
     throw new Error("Invalid user.");
   }
@@ -164,7 +164,7 @@ async function deleteGithubRepository(project: Selectable<DB["project"]>) {
   if (project.github_repo === "<DELETETED>") {
     return;
   }
-  const settings = await getSessionUserSettings();
+  const settings = await getSiteSettings();
   if (!settings) {
     throw new Error("Invalid user.");
   }

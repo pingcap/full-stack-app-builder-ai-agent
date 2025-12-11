@@ -1,10 +1,12 @@
+import { unauthorized } from "next/navigation";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createTaskRevision } from "@/actions/task-revisions";
 import { createTask } from "@/actions/tasks";
-import { getSessionUserSettings } from "@/lib/auth";
+import { getSessionUser } from "@/lib/auth";
 import db from "@/lib/db/db";
 import { get } from "@/lib/kysely-utils";
+import { getSiteSettings } from "@/lib/system-settings";
 import {
   getGitHubClient,
   isGitHubSettingsValid,
@@ -22,7 +24,12 @@ export async function POST(
   { params }: { params: Promise<{ projectId: string }> },
 ) {
   const projectId = parseInt(decodeURIComponent((await params).projectId));
-  const settings = await getSessionUserSettings();
+  const user = await getSessionUser();
+  const settings = await getSiteSettings();
+
+  if (!user) {
+    unauthorized();
+  }
 
   if (!settings) {
     return NextResponse.json(
@@ -48,7 +55,7 @@ export async function POST(
 
   const project = await get(db, "project", {
     id: projectId,
-    user_id: settings.user_id,
+    user_id: user.id,
   });
 
   const octokit = getGitHubClient(settings.github_token);

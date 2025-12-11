@@ -1,9 +1,8 @@
-import type { DB } from "@/lib/db/schema";
-import type { Selectable } from "kysely";
+import type { SiteSettings } from '@/lib/system-settings';
 
-export function isTiDBCloudSettingsValid(
-  settings: Selectable<DB["user_setting"]> | undefined | null,
-): settings is Selectable<DB["user_setting"]> & {
+export function isTiDBCloudSettingsValid (
+  settings: SiteSettings | undefined | null,
+): settings is SiteSettings & {
   tidbcloud_public_key: string;
   tidbcloud_private_key: string;
   tidbcloud_organization_id: string;

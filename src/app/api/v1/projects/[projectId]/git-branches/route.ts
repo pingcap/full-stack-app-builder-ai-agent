@@ -1,18 +1,18 @@
-import { getSessionUserSettings } from "@/lib/auth";
+import { type NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db/db";
 import { get } from "@/lib/kysely-utils";
+import { getSiteSettings } from "@/lib/system-settings";
 import {
   getGitHubClient,
   isGitHubSettingsValid,
 } from "@/lib/user-settings/github";
-import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ projectId: string }> },
 ) {
   const projectId = parseInt(decodeURIComponent((await params).projectId));
-  const settings = await getSessionUserSettings();
+  const settings = await getSiteSettings();
 
   if (!settings) {
     return NextResponse.json(
@@ -38,7 +38,6 @@ export async function GET(
 
   const project = await get(db, "project", {
     id: projectId,
-    user_id: settings.user_id,
   });
 
   const { data: branches } = await getGitHubClient(

@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
-import { getSessionUserSettings } from "@/lib/auth";
 import db from "@/lib/db/db";
 import { get, update } from "@/lib/kysely-utils";
+import { getSiteSettings } from "@/lib/system-settings";
 import { createBranch, getBranch } from "@/lib/tidbcloud/sdk";
 import { isTiDBCloudSettingsValid } from "@/lib/user-settings/tidbcloud";
 
@@ -10,7 +10,7 @@ export async function createTiDBCloudBranch(
   taskId: number,
   taskRevisionId: number,
 ) {
-  const settings = await getSessionUserSettings();
+  const settings = await getSiteSettings();
 
   if (!isTiDBCloudSettingsValid(settings)) {
     throw new Error("TiDB Cloud settings are invalid");

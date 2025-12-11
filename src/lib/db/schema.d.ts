@@ -21,6 +21,22 @@ export type JsonPrimitive = boolean | number | string | null;
 
 export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
+export interface Account {
+  access_token: string | null;
+  access_token_expires_at: Date | null;
+  account_id: string;
+  created_at: Generated<Date>;
+  id: Generated<number>;
+  id_token: string | null;
+  password: string | null;
+  provider_id: string;
+  refresh_token: string | null;
+  refresh_token_expires_at: Date | null;
+  scope: string | null;
+  updated_at: Date;
+  user_id: number;
+}
+
 export interface Project {
   auto_deployment: Generated<number>;
   coding_agent_type: string;
@@ -37,6 +53,22 @@ export interface Project {
   vercel_project_id: string;
   vercel_team_id: string;
   vercel_team_token: string;
+}
+
+export interface Session {
+  created_at: Generated<Date>;
+  expires_at: Date;
+  id: Generated<number>;
+  ip_address: string | null;
+  token: string;
+  updated_at: Date;
+  user_agent: string | null;
+  user_id: number;
+}
+
+export interface SystemSettings {
+  key: string;
+  value: Json;
 }
 
 export interface Task {
@@ -99,10 +131,13 @@ export interface UiSession {
 
 export interface User {
   avatar_url: string;
+  created_at: Generated<Date>;
   email: string;
+  email_verified: number;
   id: Generated<number>;
   name: string;
-  password: string;
+  role: Generated<string>;
+  updated_at: Generated<Date>;
 }
 
 export interface UserSetting {
@@ -131,8 +166,20 @@ export interface VercelSandbox {
   user_id: number;
 }
 
+export interface Verification {
+  created_at: Generated<Date>;
+  expires_at: Date;
+  id: Generated<number>;
+  identifier: string;
+  updated_at: Generated<Date>;
+  value: string;
+}
+
 export interface DB {
+  account: Account;
   project: Project;
+  session: Session;
+  system_settings: SystemSettings;
   task: Task;
   task_revision: TaskRevision;
   tidbcloud_branch: TidbcloudBranch;
@@ -140,4 +187,5 @@ export interface DB {
   user: User;
   user_setting: UserSetting;
   vercel_sandbox: VercelSandbox;
+  verification: Verification;
 }

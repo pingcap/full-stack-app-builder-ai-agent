@@ -1,11 +1,10 @@
 "use client";
 
-import { SidebarProvider } from "@/components/ui/sidebar";
 import { QueryCache, QueryClient } from "@tanstack/query-core";
 import { QueryClientProvider } from "@tanstack/react-query";
-import type { Session } from "next-auth";
-import { SessionProvider } from "next-auth/react";
 import type { ReactNode } from "react";
+import { type Session, SessionProvider } from "@/components/session-context";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 let queryCache: QueryCache | undefined;
 if (typeof window === "undefined") {

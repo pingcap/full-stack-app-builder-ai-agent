@@ -1,4 +1,5 @@
 import type { DB } from "@/lib/db/schema";
+import type { SiteSettings } from "@/lib/system-settings";
 import { tidbCloudFetch } from "@/lib/tidbcloud/fetch";
 
 export interface CreateClusterParams {
@@ -39,7 +40,7 @@ export interface AccessKeyInfo {
 }
 
 export type TiDBCloudSettings = {
-  [P in keyof DB["user_setting"] & `tidbcloud_${string}`]: string;
+  [P in keyof SiteSettings & `tidbcloud_${string}`]: string;
 };
 
 export async function getAccessKeyInfo(
