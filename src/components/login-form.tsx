@@ -1,6 +1,6 @@
 "use client";
 
-import { type ComponentProps, useTransition } from "react";
+import { type ComponentProps, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { signIn } from "@/actions/auth";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -24,6 +24,7 @@ export function LoginForm({
   callbackUrl,
   ...props
 }: ComponentProps<"div"> & { error?: string; callbackUrl?: string }) {
+  const [redirected, setRedirected] = useState(false);
   const [transitioning, startTransition] = useTransition();
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -56,6 +57,7 @@ export function LoginForm({
                   name="email"
                   placeholder="user@example.com"
                   required
+                  disabled={transitioning || redirected}
                 />
               </Field>
               <Field>
@@ -68,7 +70,13 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div>
-                <Input id="password" name="password" type="password" required />
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  disabled={transitioning || redirected}
+                />
               </Field>
               {error && (
                 <Alert variant="destructive">
@@ -77,7 +85,7 @@ export function LoginForm({
                 </Alert>
               )}
               <Field>
-                <Button type="submit" disabled={transitioning}>
+                <Button type="submit" disabled={transitioning || redirected}>
                   Login
                 </Button>
               </Field>
@@ -88,7 +96,7 @@ export function LoginForm({
                 <Button
                   variant="outline"
                   type="button"
-                  disabled={transitioning}
+                  disabled={transitioning || redirected}
                   onClick={() => {
                     startTransition(async () => {
                       const res = await authClient.signIn.social({
@@ -97,6 +105,7 @@ export function LoginForm({
                       if (res.error) {
                         toast.error(getErrorMessage(res.error));
                       } else {
+                        setRedirected(true);
                         if (res.data.redirect) {
                           window.location.href = res.data.url ?? "/";
                         } else {
