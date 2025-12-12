@@ -49,7 +49,7 @@ export async function* startSandbox({
   }): AsyncGenerator<StartSandboxEvent> {
   const sandbox = await Sandbox.create({
     ...options,
-    runtime: "node22",
+    runtime: "node24",
   });
 
   yield { type: "created", sandbox };
@@ -61,7 +61,6 @@ ${
   coding_agent_type === "codex"
     ? `
 CODEX_CONFIG_TOML='model_provider = "crs"
-model = "gpt-5.1-codex-max"
 model_reasoning_effort = "high"
 disable_response_storage = true
 preferred_auth_method = "apikey"
