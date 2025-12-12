@@ -29,7 +29,7 @@ import { handleFetchResponseError } from "@/lib/errors";
 export default function Page() {
   const router = useRouter();
   const [transitioning, startTransition] = useTransition();
-  const [codingAgentType, setCodingAgentType] = useState<string>("claude");
+  const [codingAgentType, setCodingAgentType] = useState<string>("codex");
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [status, setStatus] = useState<
