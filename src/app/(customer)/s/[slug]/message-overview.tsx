@@ -169,12 +169,18 @@ function QueueProgressIndicator({ completed }: { completed: boolean }) {
   );
 }
 
-function ExecutionPrepIndicator({ completed }: { completed: boolean }) {
-  return completed ? (
-    <QueueItemIndicator completed />
-  ) : (
-    <Loader className="size-4" />
-  );
+function ExecutionPrepIndicator({
+  status,
+}: {
+  status: "pending" | "in_progress" | "completed";
+}) {
+  if (status === "completed") {
+    return <QueueItemIndicator completed />;
+  }
+  if (status === "in_progress") {
+    return <Loader className="size-4" />;
+  }
+  return <QueueItemIndicator completed={false} />;
 }
 
 function CodexOverviewContent({
@@ -264,16 +270,28 @@ function CodexOverviewContent({
               </QueueSectionTrigger>
               <QueueSectionContent>
                 <QueueList>
-                  {todoListPart.output.map((item) => (
-                    <QueueItem key={item.text}>
-                      <div className="flex items-center gap-2">
-                        <ExecutionPrepIndicator completed={item.completed} />
-                        <QueueItemContent completed={item.completed}>
-                          {item.text}
-                        </QueueItemContent>
-                      </div>
-                    </QueueItem>
-                  ))}
+                  {(() => {
+                    const firstIncompleteIndex = todoListPart.output.findIndex(
+                      (item) => !item.completed,
+                    );
+                    return todoListPart.output.map((item, index) => {
+                      const status = item.completed
+                        ? "completed"
+                        : index === firstIncompleteIndex
+                          ? "in_progress"
+                          : "pending";
+                      return (
+                        <QueueItem key={item.text}>
+                          <div className="flex items-center gap-2">
+                            <ExecutionPrepIndicator status={status} />
+                            <QueueItemContent completed={item.completed}>
+                              {item.text}
+                            </QueueItemContent>
+                          </div>
+                        </QueueItem>
+                      );
+                    });
+                  })()}
                 </QueueList>
               </QueueSectionContent>
             </QueueSection>
