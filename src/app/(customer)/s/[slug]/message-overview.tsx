@@ -10,7 +10,7 @@ import type {
   UITools,
 } from "ai";
 import type { Selectable } from "kysely";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { Streamdown } from "streamdown";
 import type { UISessionData } from "@/app/(customer)/s/[slug]/query";
 import { Loader } from "@/components/ai-elements/loader";
@@ -41,15 +41,9 @@ import { generateSessionId } from "@/lib/tasks";
 export function MessageOverview({
   task_revision,
   coding_agent_type,
-  serverNowMs,
-  serverTzOffsetMinutes,
-  startedAtServerLocal,
 }: {
   coding_agent_type: string;
   task_revision: UISessionData["task_revisions"][number];
-  serverNowMs: number;
-  serverTzOffsetMinutes: number;
-  startedAtServerLocal: string;
 }) {
   const { data: branchData } = useQuery({
     enabled:
@@ -135,11 +129,6 @@ export function MessageOverview({
         <MessageContent>
           <div className="inline-flex items-center gap-2">
             <Loader />
-            <TimeElapsed
-              startedAtServerLocal={startedAtServerLocal}
-              serverTzOffsetMinutes={serverTzOffsetMinutes}
-              serverNowMs={serverNowMs}
-            />
           </div>
         </MessageContent>
       )}
@@ -170,108 +159,6 @@ export function MessageOverview({
       )}
     </>
   );
-}
-
-function TimeElapsed({
-  startedAtServerLocal,
-  serverTzOffsetMinutes,
-  serverNowMs,
-}: {
-  startedAtServerLocal: string;
-  serverTzOffsetMinutes: number;
-  serverNowMs: number;
-}) {
-  const startMs = useMemo(() => {
-    const ms = parseServerLocalTimestampToUtcMs(
-      startedAtServerLocal,
-      serverTzOffsetMinutes,
-    );
-    return ms;
-  }, [startedAtServerLocal, serverTzOffsetMinutes]);
-  const [elapsedMs, setElapsedMs] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (startMs == null) {
-      setElapsedMs(null);
-      return;
-    }
-
-    const perfStart = performance.now();
-    const updateElapsed = () => {
-      const serverNow =
-        serverNowMs + Math.max(0, performance.now() - perfStart);
-      setElapsedMs(Math.max(0, serverNow - startMs));
-    };
-
-    updateElapsed();
-    const id = setInterval(() => {
-      updateElapsed();
-    }, 1000);
-    return () => clearInterval(id);
-  }, [startMs, serverNowMs]);
-
-  return (
-    <span className="text-xs text-muted-foreground" suppressHydrationWarning>
-      Time elapsed: {elapsedMs == null ? "…" : formatDuration(elapsedMs)}
-    </span>
-  );
-}
-
-function parseServerLocalTimestampToUtcMs(
-  serverLocalIso: string,
-  serverTzOffsetMinutes: number,
-): number | null {
-  // Expected format: YYYY-MM-DDTHH:mm:ss(.SSS)
-  const m =
-    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?$/.exec(
-      serverLocalIso.trim(),
-    );
-  if (!m) {
-    const fallback = Date.parse(serverLocalIso);
-    return Number.isFinite(fallback) ? fallback : null;
-  }
-
-  const year = Number(m[1]);
-  const month = Number(m[2]);
-  const day = Number(m[3]);
-  const hour = Number(m[4]);
-  const minute = Number(m[5]);
-  const second = Number(m[6]);
-  const millis = m[7] ? Number(m[7].padEnd(3, "0")) : 0;
-
-  if (
-    !Number.isFinite(year) ||
-    !Number.isFinite(month) ||
-    !Number.isFinite(day) ||
-    !Number.isFinite(hour) ||
-    !Number.isFinite(minute) ||
-    !Number.isFinite(second) ||
-    !Number.isFinite(millis)
-  ) {
-    return null;
-  }
-
-  // serverTzOffsetMinutes is `UTC - local` (Date#getTimezoneOffset).
-  // Convert "server local time" -> UTC epoch.
-  return (
-    Date.UTC(year, month - 1, day, hour, minute, second, millis) +
-    serverTzOffsetMinutes * 60_000
-  );
-}
-
-function formatDuration(ms: number) {
-  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  if (hours > 0) {
-    return `${hours}h ${minutes}m ${seconds}s`;
-  }
-  if (minutes > 0) {
-    return `${minutes}m ${seconds}s`;
-  }
-  return `${seconds}s`;
 }
 
 function QueueProgressIndicator({ completed }: { completed: boolean }) {
