@@ -48,6 +48,7 @@ export default async function SessionPage({
 }) {
   const slug = decodeURIComponent((await params).slug);
   const serverNowMs = Date.now();
+  const serverTzOffsetMinutes = new Date().getTimezoneOffset();
 
   const session = await cachedGetSessionData(slug);
   const projectDisplayName =
@@ -120,6 +121,11 @@ export default async function SessionPage({
                               session.project?.coding_agent_type ?? ""
                             }
                             serverNowMs={serverNowMs}
+                            serverTzOffsetMinutes={serverTzOffsetMinutes}
+                            startedAtServerLocal={formatServerLocalTimestamp(
+                              task_revision.started_at ??
+                                task_revision.created_at,
+                            )}
                           />
                         )}
                         {task_revision.status === "failed" && (
@@ -207,6 +213,51 @@ export default async function SessionPage({
       </MessageActions>
     );
   }
+}
+
+function formatServerLocalTimestamp(
+  value: Date | string | null | undefined,
+): string {
+  if (!value) {
+    return formatLocalDate(new Date());
+  }
+
+  if (value instanceof Date) {
+    return formatLocalDate(value);
+  }
+
+  const raw = value.trim();
+
+  // If DB returns a MySQL-style DATETIME string with no timezone,
+  // treat it as *server-local time* and pass it through.
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(\.\d+)?$/.test(raw)) {
+    return raw.replace(" ", "T");
+  }
+
+  // ISO-like but no timezone => treat as server-local time and pass through.
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?$/.test(raw)) {
+    return raw;
+  }
+
+  // Otherwise parse (handles Z / +/- offsets) and format to server-local time.
+  const ms = Date.parse(raw);
+  if (Number.isFinite(ms)) {
+    return formatLocalDate(new Date(ms));
+  }
+
+  // Last-resort: return something parseable-ish.
+  return formatLocalDate(new Date());
+}
+
+function formatLocalDate(d: Date): string {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  const ss = String(d.getSeconds()).padStart(2, "0");
+  const mmm = String(d.getMilliseconds()).padStart(3, "0");
+  return `${yyyy}-${mm}-${dd}T${hh}:${min}:${ss}.${mmm}`;
 }
 
 export async function generateMetadata({

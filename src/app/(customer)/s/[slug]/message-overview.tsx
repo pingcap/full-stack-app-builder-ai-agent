@@ -42,10 +42,14 @@ export function MessageOverview({
   task_revision,
   coding_agent_type,
   serverNowMs,
+  serverTzOffsetMinutes,
+  startedAtServerLocal,
 }: {
   coding_agent_type: string;
   task_revision: UISessionData["task_revisions"][number];
   serverNowMs: number;
+  serverTzOffsetMinutes: number;
+  startedAtServerLocal: string;
 }) {
   const { data: branchData } = useQuery({
     enabled:
@@ -132,7 +136,8 @@ export function MessageOverview({
           <div className="inline-flex items-center gap-2">
             <Loader />
             <TimeElapsed
-              startedAt={task_revision.started_at ?? task_revision.created_at}
+              startedAtServerLocal={startedAtServerLocal}
+              serverTzOffsetMinutes={serverTzOffsetMinutes}
               serverNowMs={serverNowMs}
             />
           </div>
@@ -168,13 +173,21 @@ export function MessageOverview({
 }
 
 function TimeElapsed({
-  startedAt,
+  startedAtServerLocal,
+  serverTzOffsetMinutes,
   serverNowMs,
 }: {
-  startedAt: Date | string | null;
+  startedAtServerLocal: string;
+  serverTzOffsetMinutes: number;
   serverNowMs: number;
 }) {
-  const startMs = parseTimestampMs(startedAt);
+  const startMs = useMemo(() => {
+    const ms = parseServerLocalTimestampToUtcMs(
+      startedAtServerLocal,
+      serverTzOffsetMinutes,
+    );
+    return ms;
+  }, [startedAtServerLocal, serverTzOffsetMinutes]);
   const [elapsedMs, setElapsedMs] = useState<number | null>(null);
 
   useEffect(() => {
@@ -204,34 +217,46 @@ function TimeElapsed({
   );
 }
 
-function parseTimestampMs(value: Date | string | null): number | null {
-  if (value == null) {
+function parseServerLocalTimestampToUtcMs(
+  serverLocalIso: string,
+  serverTzOffsetMinutes: number,
+): number | null {
+  // Expected format: YYYY-MM-DDTHH:mm:ss(.SSS)
+  const m =
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?$/.exec(
+      serverLocalIso.trim(),
+    );
+  if (!m) {
+    const fallback = Date.parse(serverLocalIso);
+    return Number.isFinite(fallback) ? fallback : null;
+  }
+
+  const year = Number(m[1]);
+  const month = Number(m[2]);
+  const day = Number(m[3]);
+  const hour = Number(m[4]);
+  const minute = Number(m[5]);
+  const second = Number(m[6]);
+  const millis = m[7] ? Number(m[7].padEnd(3, "0")) : 0;
+
+  if (
+    !Number.isFinite(year) ||
+    !Number.isFinite(month) ||
+    !Number.isFinite(day) ||
+    !Number.isFinite(hour) ||
+    !Number.isFinite(minute) ||
+    !Number.isFinite(second) ||
+    !Number.isFinite(millis)
+  ) {
     return null;
   }
 
-  if (value instanceof Date) {
-    const ms = value.getTime();
-    return Number.isFinite(ms) ? ms : null;
-  }
-
-  const raw = value.trim();
-
-  // If DB returns a MySQL-style DATETIME string (no timezone),
-  // interpret it as UTC to avoid client-timezone shifts (e.g. UTC+8).
-  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(\.\d+)?$/.test(raw)) {
-    const isoUtc = `${raw.replace(" ", "T")}Z`;
-    const ms = Date.parse(isoUtc);
-    return Number.isFinite(ms) ? ms : null;
-  }
-
-  // If ISO-like but missing timezone, treat it as UTC.
-  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?$/.test(raw)) {
-    const ms = Date.parse(`${raw}Z`);
-    return Number.isFinite(ms) ? ms : null;
-  }
-
-  const ms = Date.parse(raw);
-  return Number.isFinite(ms) ? ms : null;
+  // serverTzOffsetMinutes is `UTC - local` (Date#getTimezoneOffset).
+  // Convert "server local time" -> UTC epoch.
+  return (
+    Date.UTC(year, month - 1, day, hour, minute, second, millis) +
+    serverTzOffsetMinutes * 60_000
+  );
 }
 
 function formatDuration(ms: number) {
@@ -250,6 +275,14 @@ function formatDuration(ms: number) {
 }
 
 function QueueProgressIndicator({ completed }: { completed: boolean }) {
+  return completed ? (
+    <QueueItemIndicator completed />
+  ) : (
+    <Loader className="size-4" />
+  );
+}
+
+function ExecutionPrepIndicator({ completed }: { completed: boolean }) {
   return completed ? (
     <QueueItemIndicator completed />
   ) : (
@@ -347,7 +380,7 @@ function CodexOverviewContent({
                   {todoListPart.output.map((item) => (
                     <QueueItem key={item.text}>
                       <div className="flex items-center gap-2">
-                        <QueueProgressIndicator completed={item.completed} />
+                        <ExecutionPrepIndicator completed={item.completed} />
                         <QueueItemContent completed={item.completed}>
                           {item.text}
                         </QueueItemContent>
