@@ -1,6 +1,6 @@
 import { useSize } from "@radix-ui/react-use-size";
 import { ExternalLinkIcon, Monitor, RefreshCcwIcon } from "lucide-react";
-import { type ReactNode, use, useRef, useState } from "react";
+import { type ReactNode, use, useState } from "react";
 import { PreviewIndexContext } from "@/app/(customer)/s/[slug]/preview-index-provider";
 import {
   WebPreview,
@@ -14,7 +14,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 
 export function TaskRevisionPreviewClient({
@@ -58,7 +57,7 @@ export function TaskRevisionPreviewClient({
       <WebPreviewNavigation ref={setNavigationContainerElement}>
         <Select
           value={String(index)}
-          onValueChange={(index) => setPreviewIndex(parseInt(index))}
+          onValueChange={(index) => setPreviewIndex(parseInt(index, 10))}
         >
           <SelectTrigger
             id={selectTriggerId}
@@ -112,7 +111,7 @@ export function TaskRevisionPreviewClient({
       </WebPreviewNavigation>
       {error != null ? (
         <div className="flex-1 w-full overflow-hidden">
-          <div className="size-full p-4 flex items-center justify-center flex-col gap-4">
+          <div className="size-full p-4 flex items-start justify-start flex-col gap-4 text-left">
             {error}
           </div>
         </div>

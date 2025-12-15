@@ -14,7 +14,6 @@ import { PreviewIndexContext } from "@/app/(customer)/s/[slug]/preview-index-pro
 import type { UISessionData } from "@/app/(customer)/s/[slug]/query";
 import { TaskRevisionPreviewClient } from "@/app/(customer)/s/[slug]/task-revision-preview-client";
 import { AnsiLogs } from "@/components/ansi-logs";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { handleFetchResponseError } from "@/lib/errors";
 
