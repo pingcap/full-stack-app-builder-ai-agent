@@ -369,7 +369,11 @@ export function ClaudeTodoList({
           className={cn(todo.status === "in_progress" && "bg-muted")}
         >
           <div className="flex items-center gap-2">
-            <QueueItemIndicator completed={todo.status === "completed"} />
+            {todo.status === "completed" ? (
+              <QueueItemIndicator completed />
+            ) : (
+              <Loader className="size-4" />
+            )}
             <QueueItemContent completed={todo.status === "completed"}>
               {todo.content}
             </QueueItemContent>

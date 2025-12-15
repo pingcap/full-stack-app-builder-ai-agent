@@ -174,7 +174,7 @@ function TimeElapsed({
   startedAt: Date | string | null;
   serverNowMs: number;
 }) {
-  const startMs = startedAt ? new Date(startedAt).getTime() : null;
+  const startMs = parseTimestampMs(startedAt);
   const [elapsedMs, setElapsedMs] = useState<number | null>(null);
 
   useEffect(() => {
@@ -204,6 +204,36 @@ function TimeElapsed({
   );
 }
 
+function parseTimestampMs(value: Date | string | null): number | null {
+  if (value == null) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    const ms = value.getTime();
+    return Number.isFinite(ms) ? ms : null;
+  }
+
+  const raw = value.trim();
+
+  // If DB returns a MySQL-style DATETIME string (no timezone),
+  // interpret it as UTC to avoid client-timezone shifts (e.g. UTC+8).
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(\.\d+)?$/.test(raw)) {
+    const isoUtc = `${raw.replace(" ", "T")}Z`;
+    const ms = Date.parse(isoUtc);
+    return Number.isFinite(ms) ? ms : null;
+  }
+
+  // If ISO-like but missing timezone, treat it as UTC.
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?$/.test(raw)) {
+    const ms = Date.parse(`${raw}Z`);
+    return Number.isFinite(ms) ? ms : null;
+  }
+
+  const ms = Date.parse(raw);
+  return Number.isFinite(ms) ? ms : null;
+}
+
 function formatDuration(ms: number) {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));
   const hours = Math.floor(totalSeconds / 3600);
@@ -217,6 +247,14 @@ function formatDuration(ms: number) {
     return `${minutes}m ${seconds}s`;
   }
   return `${seconds}s`;
+}
+
+function QueueProgressIndicator({ completed }: { completed: boolean }) {
+  return completed ? (
+    <QueueItemIndicator completed />
+  ) : (
+    <Loader className="size-4" />
+  );
 }
 
 function CodexOverviewContent({
@@ -276,7 +314,7 @@ function CodexOverviewContent({
                 <QueueList>
                   <QueueItem>
                     <div className="flex items-center gap-2">
-                      <QueueItemIndicator completed={branchCreated} />
+                      <QueueProgressIndicator completed={branchCreated} />
                       <QueueItemContent completed={branchCreated}>
                         Creating TiDB Cloud Branch
                       </QueueItemContent>
@@ -284,7 +322,9 @@ function CodexOverviewContent({
                   </QueueItem>
                   <QueueItem>
                     <div className="flex items-center gap-2">
-                      <QueueItemIndicator completed={vercelSandboxCreated} />
+                      <QueueProgressIndicator
+                        completed={vercelSandboxCreated}
+                      />
                       <QueueItemContent completed={vercelSandboxCreated}>
                         Creating Vercel Sandbox for coding agent execution
                       </QueueItemContent>
@@ -307,7 +347,7 @@ function CodexOverviewContent({
                   {todoListPart.output.map((item) => (
                     <QueueItem key={item.text}>
                       <div className="flex items-center gap-2">
-                        <QueueItemIndicator completed={item.completed} />
+                        <QueueProgressIndicator completed={item.completed} />
                         <QueueItemContent completed={item.completed}>
                           {item.text}
                         </QueueItemContent>
@@ -394,7 +434,7 @@ function ClaudeOverviewContent({
                 <QueueList>
                   <QueueItem>
                     <div className="flex items-center gap-2">
-                      <QueueItemIndicator completed={branchCreated} />
+                      <QueueProgressIndicator completed={branchCreated} />
                       <QueueItemContent completed={branchCreated}>
                         Creating TiDB Cloud Branch
                       </QueueItemContent>
@@ -402,7 +442,9 @@ function ClaudeOverviewContent({
                   </QueueItem>
                   <QueueItem>
                     <div className="flex items-center gap-2">
-                      <QueueItemIndicator completed={vercelSandboxCreated} />
+                      <QueueProgressIndicator
+                        completed={vercelSandboxCreated}
+                      />
                       <QueueItemContent completed={vercelSandboxCreated}>
                         Creating Vercel Sandbox for coding agent execution
                       </QueueItemContent>

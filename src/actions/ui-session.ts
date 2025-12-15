@@ -105,18 +105,14 @@ export async function* createUISession({
       },
       {
         type: "tool-input-available",
-        toolCallId: "setup:generate-first-prompt",
-        toolName: "generate-first-prompt",
+        toolCallId: "setup:detect-user-intent",
+        toolName: "detect-user-intent",
         input: undefined,
       },
     ];
     const step3Promise = generateUISessionStep3({ step1, step2, userPrompt });
 
-    const gfpIter = wrapToolCall(
-      "generate-first-prompt",
-      step3Promise,
-      (result) => result,
-    );
+    const gfpIter = wrapToolCall("detect-user-intent", step3Promise, (r) => r);
 
     const createProjectEvents = createProjectStreamed({
       name: `${kebabCase(step2.project_name)}-${suffix}`,
@@ -196,13 +192,16 @@ export async function* createUISession({
           };
           break;
         case "project-ready":
+          if (projectId == null) {
+            throw new Error("bad state: projectId is undefined");
+          }
           await update(
             db,
             "project",
             {
               status: "ready",
             },
-            { id: projectId! },
+            { id: projectId },
           );
           yield {
             type: "finish",

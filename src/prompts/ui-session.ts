@@ -4,7 +4,6 @@ import {
   type InferUIMessageChunk,
   type UIDataTypes,
   type UIMessage,
-  type UIMessageChunk,
   type UIMessagePart,
 } from "ai";
 import { z } from "zod";
@@ -179,6 +178,10 @@ export type UISessionMessageTools = {
     output: undefined;
   };
   "generate-first-prompt": {
+    input: undefined;
+    output: UISessionStep3Info;
+  };
+  "detect-user-intent": {
     input: undefined;
     output: UISessionStep3Info;
   };

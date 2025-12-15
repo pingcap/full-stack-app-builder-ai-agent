@@ -10,8 +10,6 @@ import {
   Queue,
   QueueItemContent,
   QueueItemDescription,
-  QueueItemIndicator,
-  QueueList,
 } from "@/components/ai-elements/queue";
 import type {
   UISessionMessage,
@@ -50,7 +48,7 @@ export function SessionPrepareState({ session }: { session: UISessionData }) {
         }
 
         setMessage(lastMessage);
-      } catch (e) {}
+      } catch (_e) {}
     })();
 
     return () => {
@@ -91,7 +89,13 @@ export function SessionPrepareState({ session }: { session: UISessionData }) {
             case "tool-generate-first-prompt":
               return (
                 <TodoItem key={part.toolCallId} part={part}>
-                  Generate first prompt
+                  Detect user intent
+                </TodoItem>
+              );
+            case "tool-detect-user-intent":
+              return (
+                <TodoItem key={part.toolCallId} part={part}>
+                  Detect user intent
                 </TodoItem>
               );
             case "tool-generate-meta-fields":
