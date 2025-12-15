@@ -27,6 +27,7 @@ Help user to generate the meta fields and first prompt:
 - Do not make a specific plan for generic job, let agent decide what to do.
 - Code agent can fetch URL content, let agent fetch URL if needed.
 - Make sure the coding agent will write and **execute the migration sql** if database features will be used
+- Database is TiDB Cloud (MySQL-compatible). Use MySQL/TiDB grammar and avoid Postgres-only SQL (e.g. \`RETURNING\`).
 - Do not use specific tech stack, agent needs to find it in the repository structure
 - \`npm run dev\` is running, the dev port is 3000.
 - Do not read file .env.local, it containers secret environment variables:
