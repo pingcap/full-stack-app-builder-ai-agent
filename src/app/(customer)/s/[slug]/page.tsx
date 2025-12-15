@@ -47,6 +47,7 @@ export default async function SessionPage({
   params: Promise<{ slug: string }>;
 }) {
   const slug = decodeURIComponent((await params).slug);
+  const serverNowMs = Date.now();
 
   const session = await cachedGetSessionData(slug);
   const projectDisplayName =
@@ -118,6 +119,7 @@ export default async function SessionPage({
                             coding_agent_type={
                               session.project?.coding_agent_type ?? ""
                             }
+                            serverNowMs={serverNowMs}
                           />
                         )}
                         {task_revision.status === "failed" && (

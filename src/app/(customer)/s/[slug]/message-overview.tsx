@@ -41,9 +41,11 @@ import { generateSessionId } from "@/lib/tasks";
 export function MessageOverview({
   task_revision,
   coding_agent_type,
+  serverNowMs,
 }: {
   coding_agent_type: string;
   task_revision: UISessionData["task_revisions"][number];
+  serverNowMs: number;
 }) {
   const { data: branchData } = useQuery({
     enabled:
@@ -131,6 +133,7 @@ export function MessageOverview({
             <Loader />
             <TimeElapsed
               startedAt={task_revision.started_at ?? task_revision.created_at}
+              serverNowMs={serverNowMs}
             />
           </div>
         </MessageContent>
@@ -166,19 +169,33 @@ export function MessageOverview({
 
 function TimeElapsed({
   startedAt,
+  serverNowMs,
 }: {
   startedAt: Date | string | null;
+  serverNowMs: number;
 }) {
-  const startMs = startedAt ? new Date(startedAt).getTime() : Date.now();
+  const startMs = startedAt ? new Date(startedAt).getTime() : null;
   const [elapsedMs, setElapsedMs] = useState<number | null>(null);
 
   useEffect(() => {
-    setElapsedMs(Math.max(0, Date.now() - startMs));
+    if (startMs == null) {
+      setElapsedMs(null);
+      return;
+    }
+
+    const perfStart = performance.now();
+    const updateElapsed = () => {
+      const serverNow =
+        serverNowMs + Math.max(0, performance.now() - perfStart);
+      setElapsedMs(Math.max(0, serverNow - startMs));
+    };
+
+    updateElapsed();
     const id = setInterval(() => {
-      setElapsedMs(Math.max(0, Date.now() - startMs));
+      updateElapsed();
     }, 1000);
     return () => clearInterval(id);
-  }, [startMs]);
+  }, [startMs, serverNowMs]);
 
   return (
     <span className="text-xs text-muted-foreground" suppressHydrationWarning>
