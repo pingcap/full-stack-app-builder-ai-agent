@@ -134,8 +134,8 @@ echo Setup MCP Servers
 ${
   lastSession == null && coding_agent_type === "codex"
     ? `
-codex mcp add nextjs-devtools npx -y "next-devtools-mcp@latest"
-codex mcp add shadcn npx -y "shadcn@latest" "mcp"
+# codex mcp add nextjs-devtools npx -y "next-devtools-mcp@latest"
+# codex mcp add shadcn npx -y "shadcn@latest" "mcp"
 `
     : ""
 }
