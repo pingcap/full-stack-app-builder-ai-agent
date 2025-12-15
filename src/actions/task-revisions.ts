@@ -191,6 +191,7 @@ call_finish_hook
 const filesToZip: Record<string, string[]> = {
   codex: [".codex"],
   claude: [".claude.json", ".claude"],
+  "claude-opus": [".claude.json", ".claude"],
 };
 
 export async function getTaskRevisionCommandStatus(id: number) {
