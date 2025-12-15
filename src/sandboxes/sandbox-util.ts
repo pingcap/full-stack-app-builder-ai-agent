@@ -70,6 +70,8 @@ trust_level = "trusted"
 
 [model_providers.crs]
 name = "crs"
+model = "gpt-5.2"
+model_reasoning_effort = "medium"
 base_url = "https://cr-tokyo.breeswish.org/openai"
 wire_api = "responses"
 requires_openai_auth = true
