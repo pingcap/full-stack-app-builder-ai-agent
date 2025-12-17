@@ -42,9 +42,22 @@ OPENAI_API_KEY=#
 ```
 
 
-## Build source codes
+## Prepare source codes
+
+ai-stream-proxy
+```shell
+cd full-stack-app-builder-ai-agent/contrib/ai-stream-proxy
+npm i
+```
 
 ```shell
 cd full-stack-app-builder-ai-agent
+npm i
+
+cd contrib/ai-stream-proxy
+npm i
+
+cd ../..
+
 npm run build
 ```
