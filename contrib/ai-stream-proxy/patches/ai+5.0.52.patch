@@ -1,0 +1,140 @@
+diff --git a/node_modules/ai/dist/index.d.mts b/node_modules/ai/dist/index.d.mts
+index 6299d5b..fc08cf2 100644
+--- a/node_modules/ai/dist/index.d.mts
++++ b/node_modules/ai/dist/index.d.mts
+@@ -4622,3 +4622,49 @@ declare global {
+ }
+ 
+ export { AbstractChat, AsyncIterableStream, CallSettings, CallWarning, ChatInit, ChatOnDataCallback, ChatOnErrorCallback, ChatOnFinishCallback, ChatOnToolCallCallback, ChatRequestOptions, ChatState, ChatStatus, ChatTransport, ChunkDetector, CompletionRequestOptions, CoreAssistantMessage, CoreMessage, CoreSystemMessage, CoreToolMessage, CoreUserMessage, CreateUIMessage, DataUIPart, DeepPartial, DefaultChatTransport, DownloadError, DynamicToolCall, DynamicToolError, DynamicToolResult, DynamicToolUIPart, EmbedManyResult, EmbedResult, Embedding, EmbeddingModel, EmbeddingModelUsage, ErrorHandler, Agent as Experimental_Agent, AgentSettings as Experimental_AgentSettings, DownloadFunction as Experimental_DownloadFunction, GenerateImageResult as Experimental_GenerateImageResult, GeneratedFile as Experimental_GeneratedImage, InferAgentUIMessage as Experimental_InferAgentUIMessage, LogWarningsFunction as Experimental_LogWarningsFunction, SpeechResult as Experimental_SpeechResult, TranscriptionResult as Experimental_TranscriptionResult, Warning as Experimental_Warning, FileUIPart, FinishReason, GenerateObjectResult, GenerateTextOnStepFinishCallback, GenerateTextResult, GeneratedAudioFile, GeneratedFile, HttpChatTransport, HttpChatTransportInitOptions, ImageModel, ImageGenerationWarning as ImageModelCallWarning, ImageModelProviderMetadata, ImageModelResponseMetadata, InferUIDataParts, InferUIMessageChunk, InferUITool, InferUITools, InvalidArgumentError, InvalidDataContentError, InvalidMessageRoleError, InvalidStreamPartError, InvalidToolInputError, JSONRPCError, JSONRPCMessage, JSONRPCNotification, JSONRPCRequest, JSONRPCResponse, JSONValue, JsonToSseTransformStream, LanguageModel, LanguageModelMiddleware, LanguageModelRequestMetadata, LanguageModelResponseMetadata, LanguageModelUsage, MCPClientError, MCPTransport, MessageConversionError, NoImageGeneratedError, NoObjectGeneratedError, NoOutputGeneratedError, NoOutputSpecifiedError, NoSuchProviderError, NoSuchToolError, ObjectStreamPart, output as Output, PrepareReconnectToStreamRequest, PrepareSendMessagesRequest, PrepareStepFunction, PrepareStepResult, Prompt, Provider, ProviderMetadata, ProviderRegistryProvider, ReasoningOutput, ReasoningUIPart, RepairTextFunction, RetryError, SafeValidateUIMessagesResult, SerialJobExecutor, SourceDocumentUIPart, SourceUrlUIPart, SpeechModel, SpeechModelResponseMetadata, SpeechWarning, StaticToolCall, StaticToolError, StaticToolResult, StepResult, StepStartUIPart, StopCondition, StreamObjectOnFinishCallback, StreamObjectResult, StreamTextOnChunkCallback, StreamTextOnErrorCallback, StreamTextOnFinishCallback, StreamTextOnStepFinishCallback, StreamTextResult, StreamTextTransform, TelemetrySettings, TextStreamChatTransport, TextStreamPart, TextUIPart, ToolCallRepairError, ToolCallRepairFunction, ToolChoice, ToolSet, ToolUIPart, TranscriptionModel, TranscriptionModelResponseMetadata, TranscriptionWarning, TypedToolCall, TypedToolError, TypedToolResult, UIDataPartSchemas, UIDataTypes, UIMessage, UIMessageChunk, UIMessagePart, UIMessageStreamOnFinishCallback, UIMessageStreamOptions, UIMessageStreamWriter, UITool, UIToolInvocation, UITools, UI_MESSAGE_STREAM_HEADERS, UnsupportedModelVersionError, UseCompletionOptions, assistantModelMessageSchema, callCompletionApi, consumeStream, convertFileListToFileUIParts, convertToCoreMessages, convertToModelMessages, coreAssistantMessageSchema, coreMessageSchema, coreSystemMessageSchema, coreToolMessageSchema, coreUserMessageSchema, cosineSimilarity, createProviderRegistry, createTextStreamResponse, createUIMessageStream, createUIMessageStreamResponse, customProvider, defaultSettingsMiddleware, embed, embedMany, MCPClient as experimental_MCPClient, MCPClientConfig as experimental_MCPClientConfig, createMCPClient as experimental_createMCPClient, experimental_createProviderRegistry, experimental_customProvider, generateImage as experimental_generateImage, generateSpeech as experimental_generateSpeech, transcribe as experimental_transcribe, extractReasoningMiddleware, generateObject, generateText, getTextFromDataUrl, getToolName, getToolOrDynamicToolName, hasToolCall, isDeepEqualData, isToolOrDynamicToolUIPart, isToolUIPart, lastAssistantMessageIsCompleteWithToolCalls, modelMessageSchema, parsePartialJson, pipeTextStreamToResponse, pipeUIMessageStreamToResponse, readUIMessageStream, safeValidateUIMessages, simulateReadableStream, simulateStreamingMiddleware, smoothStream, stepCountIs, streamObject, streamText, systemModelMessageSchema, toolModelMessageSchema, uiMessageChunkSchema, userModelMessageSchema, validateUIMessages, wrapLanguageModel, wrapProvider };
++
++export type StreamingUIMessageState<UI_MESSAGE extends UIMessage> = {
++  message: UI_MESSAGE;
++  activeTextParts: Record<string, TextUIPart>;
++  activeReasoningParts: Record<string, ReasoningUIPart>;
++  partialToolCalls: Record<
++    string,
++    { text: string; index: number; toolName: string; dynamic?: boolean }
++  >;
++};
++
++export declare function createStreamingUIMessageState<UI_MESSAGE extends UIMessage>({
++  lastMessage,
++  messageId,
++}: {
++  lastMessage: UI_MESSAGE | undefined;
++  messageId: string;
++}): StreamingUIMessageState<UI_MESSAGE>;
++
++export declare function processUIMessageStream<UI_MESSAGE extends UIMessage>({
++  stream,
++  messageMetadataSchema,
++  dataPartSchemas,
++  runUpdateMessageJob,
++  onError,
++  onToolCall,
++  onData,
++}: {
++  // input stream is not fully typed yet:
++  stream: ReadableStream<UIMessageChunk>;
++  messageMetadataSchema?:
++    | Validator<InferUIMessageMetadata<UI_MESSAGE>>
++    | StandardSchemaV1<InferUIMessageMetadata<UI_MESSAGE>>;
++  dataPartSchemas?: UIDataTypesToSchemas<InferUIMessageData<UI_MESSAGE>>;
++  onToolCall?: (options: {
++    toolCall: InferUIMessageToolCall<UI_MESSAGE>;
++  }) => void | PromiseLike<void>;
++  onData?: (dataPart: DataUIPart<InferUIMessageData<UI_MESSAGE>>) => void;
++  runUpdateMessageJob: (
++    job: (options: {
++      state: StreamingUIMessageState<UI_MESSAGE>;
++      write: () => void;
++    }) => Promise<void>,
++  ) => Promise<void>;
++  onError: ErrorHandler;
++}): ReadableStream<InferUIMessageChunk<UI_MESSAGE>>;
+diff --git a/node_modules/ai/dist/index.d.ts b/node_modules/ai/dist/index.d.ts
+index 6299d5b..03ec671 100644
+--- a/node_modules/ai/dist/index.d.ts
++++ b/node_modules/ai/dist/index.d.ts
+@@ -4621,4 +4621,50 @@ declare global {
+     var AI_SDK_LOG_WARNINGS: LogWarningsFunction | undefined | false;
+ }
+ 
+-export { AbstractChat, AsyncIterableStream, CallSettings, CallWarning, ChatInit, ChatOnDataCallback, ChatOnErrorCallback, ChatOnFinishCallback, ChatOnToolCallCallback, ChatRequestOptions, ChatState, ChatStatus, ChatTransport, ChunkDetector, CompletionRequestOptions, CoreAssistantMessage, CoreMessage, CoreSystemMessage, CoreToolMessage, CoreUserMessage, CreateUIMessage, DataUIPart, DeepPartial, DefaultChatTransport, DownloadError, DynamicToolCall, DynamicToolError, DynamicToolResult, DynamicToolUIPart, EmbedManyResult, EmbedResult, Embedding, EmbeddingModel, EmbeddingModelUsage, ErrorHandler, Agent as Experimental_Agent, AgentSettings as Experimental_AgentSettings, DownloadFunction as Experimental_DownloadFunction, GenerateImageResult as Experimental_GenerateImageResult, GeneratedFile as Experimental_GeneratedImage, InferAgentUIMessage as Experimental_InferAgentUIMessage, LogWarningsFunction as Experimental_LogWarningsFunction, SpeechResult as Experimental_SpeechResult, TranscriptionResult as Experimental_TranscriptionResult, Warning as Experimental_Warning, FileUIPart, FinishReason, GenerateObjectResult, GenerateTextOnStepFinishCallback, GenerateTextResult, GeneratedAudioFile, GeneratedFile, HttpChatTransport, HttpChatTransportInitOptions, ImageModel, ImageGenerationWarning as ImageModelCallWarning, ImageModelProviderMetadata, ImageModelResponseMetadata, InferUIDataParts, InferUIMessageChunk, InferUITool, InferUITools, InvalidArgumentError, InvalidDataContentError, InvalidMessageRoleError, InvalidStreamPartError, InvalidToolInputError, JSONRPCError, JSONRPCMessage, JSONRPCNotification, JSONRPCRequest, JSONRPCResponse, JSONValue, JsonToSseTransformStream, LanguageModel, LanguageModelMiddleware, LanguageModelRequestMetadata, LanguageModelResponseMetadata, LanguageModelUsage, MCPClientError, MCPTransport, MessageConversionError, NoImageGeneratedError, NoObjectGeneratedError, NoOutputGeneratedError, NoOutputSpecifiedError, NoSuchProviderError, NoSuchToolError, ObjectStreamPart, output as Output, PrepareReconnectToStreamRequest, PrepareSendMessagesRequest, PrepareStepFunction, PrepareStepResult, Prompt, Provider, ProviderMetadata, ProviderRegistryProvider, ReasoningOutput, ReasoningUIPart, RepairTextFunction, RetryError, SafeValidateUIMessagesResult, SerialJobExecutor, SourceDocumentUIPart, SourceUrlUIPart, SpeechModel, SpeechModelResponseMetadata, SpeechWarning, StaticToolCall, StaticToolError, StaticToolResult, StepResult, StepStartUIPart, StopCondition, StreamObjectOnFinishCallback, StreamObjectResult, StreamTextOnChunkCallback, StreamTextOnErrorCallback, StreamTextOnFinishCallback, StreamTextOnStepFinishCallback, StreamTextResult, StreamTextTransform, TelemetrySettings, TextStreamChatTransport, TextStreamPart, TextUIPart, ToolCallRepairError, ToolCallRepairFunction, ToolChoice, ToolSet, ToolUIPart, TranscriptionModel, TranscriptionModelResponseMetadata, TranscriptionWarning, TypedToolCall, TypedToolError, TypedToolResult, UIDataPartSchemas, UIDataTypes, UIMessage, UIMessageChunk, UIMessagePart, UIMessageStreamOnFinishCallback, UIMessageStreamOptions, UIMessageStreamWriter, UITool, UIToolInvocation, UITools, UI_MESSAGE_STREAM_HEADERS, UnsupportedModelVersionError, UseCompletionOptions, assistantModelMessageSchema, callCompletionApi, consumeStream, convertFileListToFileUIParts, convertToCoreMessages, convertToModelMessages, coreAssistantMessageSchema, coreMessageSchema, coreSystemMessageSchema, coreToolMessageSchema, coreUserMessageSchema, cosineSimilarity, createProviderRegistry, createTextStreamResponse, createUIMessageStream, createUIMessageStreamResponse, customProvider, defaultSettingsMiddleware, embed, embedMany, MCPClient as experimental_MCPClient, MCPClientConfig as experimental_MCPClientConfig, createMCPClient as experimental_createMCPClient, experimental_createProviderRegistry, experimental_customProvider, generateImage as experimental_generateImage, generateSpeech as experimental_generateSpeech, transcribe as experimental_transcribe, extractReasoningMiddleware, generateObject, generateText, getTextFromDataUrl, getToolName, getToolOrDynamicToolName, hasToolCall, isDeepEqualData, isToolOrDynamicToolUIPart, isToolUIPart, lastAssistantMessageIsCompleteWithToolCalls, modelMessageSchema, parsePartialJson, pipeTextStreamToResponse, pipeUIMessageStreamToResponse, readUIMessageStream, safeValidateUIMessages, simulateReadableStream, simulateStreamingMiddleware, smoothStream, stepCountIs, streamObject, streamText, systemModelMessageSchema, toolModelMessageSchema, uiMessageChunkSchema, userModelMessageSchema, validateUIMessages, wrapLanguageModel, wrapProvider };
++export { AbstractChat, AsyncIterableStream, CallSettings, CallWarning, ChatInit, ChatOnDataCallback, ChatOnErrorCallback, ChatOnFinishCallback, ChatOnToolCallCallback, ChatRequestOptions, ChatState, ChatStatus, ChatTransport, ChunkDetector, CompletionRequestOptions, CoreAssistantMessage, CoreMessage, CoreSystemMessage, CoreToolMessage, CoreUserMessage, CreateUIMessage, DataUIPart, DeepPartial, DefaultChatTransport, DownloadError, DynamicToolCall, DynamicToolError, DynamicToolResult, DynamicToolUIPart, EmbedManyResult, EmbedResult, Embedding, EmbeddingModel, EmbeddingModelUsage, ErrorHandler, Agent as Experimental_Agent, AgentSettings as Experimental_AgentSettings, DownloadFunction as Experimental_DownloadFunction, GenerateImageResult as Experimental_GenerateImageResult, GeneratedFile as Experimental_GeneratedImage, InferAgentUIMessage as Experimental_InferAgentUIMessage, LogWarningsFunction as Experimental_LogWarningsFunction, SpeechResult as Experimental_SpeechResult, TranscriptionResult as Experimental_TranscriptionResult, Warning as Experimental_Warning, FileUIPart, FinishReason, GenerateObjectResult, GenerateTextOnStepFinishCallback, GenerateTextResult, GeneratedAudioFile, GeneratedFile, HttpChatTransport, HttpChatTransportInitOptions, ImageModel, ImageGenerationWarning as ImageModelCallWarning, ImageModelProviderMetadata, ImageModelResponseMetadata, InferUIDataParts, InferUIMessageChunk, InferUITool, InferUITools, InvalidArgumentError, InvalidDataContentError, InvalidMessageRoleError, InvalidStreamPartError, InvalidToolInputError, JSONRPCError, JSONRPCMessage, JSONRPCNotification, JSONRPCRequest, JSONRPCResponse, JSONValue, JsonToSseTransformStream, LanguageModel, LanguageModelMiddleware, LanguageModelRequestMetadata, LanguageModelResponseMetadata, LanguageModelUsage, MCPClientError, MCPTransport, MessageConversionError, NoImageGeneratedError, NoObjectGeneratedError, NoOutputGeneratedError, NoOutputSpecifiedError, NoSuchProviderError, NoSuchToolError, ObjectStreamPart, output as Output, PrepareReconnectToStreamRequest, PrepareSendMessagesRequest, PrepareStepFunction, PrepareStepResult, Prompt, Provider, ProviderMetadata, ProviderRegistryProvider, ReasoningOutput, ReasoningUIPart, RepairTextFunction, RetryError, SafeValidateUIMessagesResult, SerialJobExecutor, SourceDocumentUIPart, SourceUrlUIPart, SpeechModel, SpeechModelResponseMetadata, SpeechWarning, StaticToolCall, StaticToolError, StaticToolResult, StepResult, StepStartUIPart, StopCondition, StreamObjectOnFinishCallback, StreamObjectResult, StreamTextOnChunkCallback, StreamTextOnErrorCallback, StreamTextOnFinishCallback, StreamTextOnStepFinishCallback, StreamTextResult, StreamTextTransform, TelemetrySettings, TextStreamChatTransport, TextStreamPart, TextUIPart, ToolCallRepairError, ToolCallRepairFunction, ToolChoice, ToolSet, ToolUIPart, TranscriptionModel, TranscriptionModelResponseMetadata, TranscriptionWarning, TypedToolCall, TypedToolError, TypedToolResult, UIDataPartSchemas, UIDataTypes, UIMessage, UIMessageChunk, UIMessagePart, UIMessageStreamOnFinishCallback, UIMessageStreamOptions, UIMessageStreamWriter, UITool, UIToolInvocation, UITools, UI_MESSAGE_STREAM_HEADERS, UnsupportedModelVersionError, UseCompletionOptions, assistantModelMessageSchema, callCompletionApi, consumeStream, convertFileListToFileUIParts, convertToCoreMessages, convertToModelMessages, coreAssistantMessageSchema, coreMessageSchema, coreSystemMessageSchema, coreToolMessageSchema, coreUserMessageSchema, cosineSimilarity, createProviderRegistry, createTextStreamResponse, createUIMessageStream, createUIMessageStreamResponse, customProvider, defaultSettingsMiddleware, embed, embedMany, MCPClient as experimental_MCPClient, MCPClientConfig as experimental_MCPClientConfig, createMCPClient as experimental_createMCPClient, experimental_createProviderRegistry, experimental_customProvider, generateImage as experimental_generateImage, generateSpeech as experimental_generateSpeech, transcribe as experimental_transcribe, extractReasoningMiddleware, generateObject, generateText, getTextFromDataUrl, getToolName, getToolOrDynamicToolName, hasToolCall, isDeepEqualData, isToolOrDynamicToolUIPart, isToolUIPart, lastAssistantMessageIsCompleteWithToolCalls, modelMessageSchema, parsePartialJson, pipeTextStreamToResponse, pipeUIMessageStreamToResponse, readUIMessageStream, safeValidateUIMessages, simulateReadableStream, simulateStreamingMiddleware, smoothStream, stepCountIs, streamObject, streamText, systemModelMessageSchema, toolModelMessageSchema, uiMessageChunkSchema, userModelMessageSchema, validateUIMessages, wrapLanguageModel, wrapProvider }
++
++export type StreamingUIMessageState<UI_MESSAGE extends UIMessage> = {
++  message: UI_MESSAGE;
++  activeTextParts: Record<string, TextUIPart>;
++  activeReasoningParts: Record<string, ReasoningUIPart>;
++  partialToolCalls: Record<
++    string,
++    { text: string; index: number; toolName: string; dynamic?: boolean }
++  >;
++};
++
++export declare function createStreamingUIMessageState<UI_MESSAGE extends UIMessage>({
++  lastMessage,
++  messageId,
++}: {
++  lastMessage: UI_MESSAGE | undefined;
++  messageId: string;
++}): StreamingUIMessageState<UI_MESSAGE>;
++
++export declare function processUIMessageStream<UI_MESSAGE extends UIMessage>({
++  stream,
++  messageMetadataSchema,
++  dataPartSchemas,
++  runUpdateMessageJob,
++  onError,
++  onToolCall,
++  onData,
++}: {
++  // input stream is not fully typed yet:
++  stream: ReadableStream<UIMessageChunk>;
++  messageMetadataSchema?:
++    | Validator<InferUIMessageMetadata<UI_MESSAGE>>
++    | StandardSchemaV1<InferUIMessageMetadata<UI_MESSAGE>>;
++  dataPartSchemas?: UIDataTypesToSchemas<InferUIMessageData<UI_MESSAGE>>;
++  onToolCall?: (options: {
++    toolCall: InferUIMessageToolCall<UI_MESSAGE>;
++  }) => void | PromiseLike<void>;
++  onData?: (dataPart: DataUIPart<InferUIMessageData<UI_MESSAGE>>) => void;
++  runUpdateMessageJob: (
++    job: (options: {
++      state: StreamingUIMessageState<UI_MESSAGE>;
++      write: () => void;
++    }) => Promise<void>,
++  ) => Promise<void>;
++  onError: ErrorHandler;
++}): ReadableStream<InferUIMessageChunk<UI_MESSAGE>>;
+diff --git a/node_modules/ai/dist/index.js b/node_modules/ai/dist/index.js
+index 1397087..d591419 100644
+--- a/node_modules/ai/dist/index.js
++++ b/node_modules/ai/dist/index.js
+@@ -10487,6 +10487,8 @@ function readUIMessageStream({
+   validateUIMessages,
+   wrapLanguageModel,
+   wrapProvider,
+-  zodSchema
++  zodSchema,
++  createStreamingUIMessageState,
++  processUIMessageStream,
+ });
+ //# sourceMappingURL=index.js.map
+\ No newline at end of file
+diff --git a/node_modules/ai/dist/index.mjs b/node_modules/ai/dist/index.mjs
+index eeeffab..2560b3a 100644
+--- a/node_modules/ai/dist/index.mjs
++++ b/node_modules/ai/dist/index.mjs
+@@ -10467,6 +10467,8 @@ export {
+   validateUIMessages,
+   wrapLanguageModel,
+   wrapProvider,
+-  zodSchema
++  zodSchema,
++  createStreamingUIMessageState,
++  processUIMessageStream,
+ };
+ //# sourceMappingURL=index.mjs.map
+\ No newline at end of file

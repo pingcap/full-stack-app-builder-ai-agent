@@ -1,0 +1,38 @@
+{
+  "name": "ai-stream-proxy",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "index.ts",
+  "private": true,
+  "scripts": {
+    "start": "node --env-file .env.example index.ts",
+    "postinstall": "patch-package"
+  },
+  "devDependencies": {
+    "@anthropic-ai/claude-code": "^1.0.119",
+    "@anthropic-ai/sdk": "^0.63.1",
+    "@modelcontextprotocol/sdk": "^1.23.0",
+    "@openai/codex-sdk": "^0.60.1",
+    "@types/json-schema": "^7.0.15",
+    "@types/koa__router": "^12.0.4",
+    "@types/node": "^22.18.0",
+    "pantheon-tdd-sdk": "^1.0.0",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^2.0.58",
+    "@koa/bodyparser": "^6.0.0",
+    "@koa/router": "^14.0.0",
+    "@types/koa": "^3.0.0",
+    "ai": "5.0.52",
+    "bindings": "^1.5.0",
+    "chalk": "^5.6.2",
+    "dotenv": "^17.2.2",
+    "koa": "^3.0.3",
+    "patch-package": "^8.0.0",
+    "pm2": "^6.0.13",
+    "redis": "^5.8.2",
+    "zod": "^4.1.13"
+  }
+}
