@@ -47,9 +47,25 @@ npm run migrate:up-to-latest
 npm run seed:admin-user
 ```
 
+You shall see the admin email and password printed out in console log.
+
 
 ## Start server
 
 ```shell
 pm2 start ecosystem.config.js
 ```
+
+
+## Login admin user and setup accounts
+
+- Visit your server via browser http://<your-ec2-public-ip>.
+- Login with admin email and password.
+
+Setup accounts on the left sidebar:
+- GitHub Account
+  ![setup-github-account.png](assets/setup-github-account.png)
+- Vercel Account
+  ![setup-vercel-account.png](assets/setup-vercel-account.png)
+- TiDB Cloud Account
+  ![setup-tidbcloud-account.png](assets/setup-tidbcloud-account.png)

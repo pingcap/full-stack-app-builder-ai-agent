@@ -21,9 +21,12 @@
 
 ## Get Start
 
-TBD
+1. [Prepare Accounts](1-prepare-accounts.md)
+2. [Prepare EC2](2-prepare-ec2.md)
+3. [Prepare App](3-prepare-app.md)
 
 
 ## Limitations
 
-TBD
+- Each TiDB Cloud Account can create at most 5 free tier cluster.
+- Each TiDB Cloud Project can create at most 5 branches.

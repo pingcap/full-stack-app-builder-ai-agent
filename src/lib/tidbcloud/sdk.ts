@@ -76,7 +76,7 @@ export async function createCluster(
           name: process.env.TIDB_CLOUD_REGION!,
         },
         spendingLimit: {
-          monthly: 1000,
+          monthly: process.env.TIDB_CLOUD_FREE_TIER === '1' ? 0 : 1000,
         },
         labels: {
           "tidb.cloud/organization": settings.tidbcloud_organization_id,
