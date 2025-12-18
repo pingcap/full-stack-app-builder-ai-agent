@@ -15,7 +15,7 @@ module.exports = {
       name: "server",
       cwd: __dirname,
       script: "npm",
-      args: "start",
+      args: "start -H 0.0.0.0",
       instances: 1,
     },
   ],
