@@ -1,6 +1,5 @@
-import { spawnSync } from "node:child_process";
 import { genSaltSync } from "bcrypt";
-import { quote } from "shell-quote";
+import { sh } from "./common.js";
 
 const ip = sh("curl", "-s", "http://checkip.amazonaws.com/");
 
@@ -31,6 +30,3 @@ HOOK_BASE_URL="http://${ip}"
 
 console.log(template);
 
-function sh(exec, ...args) {
-  return spawnSync(exec, args).stdout.toString().trim();
-}
