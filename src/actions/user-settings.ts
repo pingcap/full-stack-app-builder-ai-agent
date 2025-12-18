@@ -5,9 +5,7 @@ import type { AuthUser } from "@vercel/sdk/models/authuser";
 import type { AuthUserLimited } from "@vercel/sdk/models/authuserlimited";
 import { refresh } from "next/cache";
 import { getSessionUser } from "@/lib/auth";
-import db from "@/lib/db/db";
-import { getErrorMessage, handleFetchResponseError } from "@/lib/errors";
-import { update } from "@/lib/kysely-utils";
+import { getErrorMessage } from "@/lib/errors";
 import { getSiteSettings, updateSiteSettings } from "@/lib/system-settings";
 import { type AccessKeyInfo, getAccessKeyInfo } from "@/lib/tidbcloud/sdk";
 import {
@@ -16,11 +14,6 @@ import {
 } from "@/lib/user-settings/github";
 import { getVercelClient } from "@/lib/user-settings/vercel";
 import { getBlobStorageReadWriteToken } from "@/lib/vercel/blobs";
-
-export type OpenaiUser = {
-  name: string;
-  email: string;
-};
 
 export type GithubUserResponse = Endpoints["GET /user"]["response"]["data"];
 
@@ -178,31 +171,6 @@ export async function setTidbCloudAccessKey(formData: FormData) {
   return result;
 }
 
-export async function setOpenaiApiKey(formData: FormData) {
-  const token = formData.get("openai_api_key");
-  if (typeof token !== "string") {
-    return "No token provided.";
-  }
-  const user = await getSessionUser();
-
-  if (!user) {
-    return "User not found.";
-  }
-
-  const result = await validateOpenaiApiKey(token);
-  if (typeof result === "string") {
-    return result;
-  }
-
-  await updateSiteSettings({
-    openai_api_key: token,
-  });
-
-  refresh();
-
-  return result;
-}
-
 export async function validateGitHubToken(
   token?: string | undefined | null,
 ): Promise<GithubUserResponse | string> {
@@ -273,30 +241,6 @@ export async function validateTidbCloudAccessKey(
     }
 
     return info;
-  } catch (e) {
-    return getErrorMessage(e);
-  }
-}
-
-export async function validateOpenaiApiKey(token?: string | null) {
-  try {
-    if (!token) {
-      const sessionUserSettings = await getSiteSettings();
-
-      if (isGitHubSettingsValid(sessionUserSettings)) {
-        token = sessionUserSettings.openai_api_key;
-      }
-    }
-
-    const res = await fetch("https://api.openai.com/v1/me", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }).then(handleFetchResponseError);
-
-    const dat = await res.json();
-
-    return dat as OpenaiUser;
   } catch (e) {
     return getErrorMessage(e);
   }

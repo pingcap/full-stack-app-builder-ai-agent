@@ -1,7 +1,5 @@
 # Prepare Accounts
 
-Create a local .env file to store service tokens. DO NOT SHARE THE CONTENT OF THIS FILE TO OHTERS.
-
 ## TiDB Cloud
 
 ### Prepare App Database

@@ -95,7 +95,7 @@ export async function POST(
       },
       {
         key: "OPENAI_API_KEY",
-        value: settings?.openai_api_key ?? "",
+        value: process.env.OPENAI_API_KEY ?? "",
         customEnvironmentIds: [env.id],
         target: [],
         type: "encrypted",

@@ -17,13 +17,23 @@ Setup environment variables listed below:
 
 ```dotenv
 DATABASE_URL=mysql://<USERNAME>:<PASSWORD>@<HOST>:<PORT>/<DATABASE>
-STREAM_PROXY_URL=http://<ec2-ip>:3001
-BCRYPT_SALT=# node -e 'await import("bcrypt").then((bcrypt) => bcrypt.genSalt(6)).then(console.log);'
 
 # You can find the endpoint and region in your cluster connection url.
 TIDB_CLOUD_DATABASE_ENDPOINT=gateway01.us-east-1.prod.aws.tidbcloud.com
 TIDB_CLOUD_PROVIDER=aws
 TIDB_CLOUD_REGION=aws-us-east-1
+
+CODEX_PROVIDER_BASE_URL=
+CODEX_PROVIDER_API_KEY=
+ANTHROPIC_BASE_URL=
+ANTHROPIC_AUTH_TOKEN=
+
+OPENAI_API_KEY=#
+
+STREAM_PROXY_URL=#http://<ec2-ip>:3001
+
+# Run "node -e 'await import(\'bcrypt\').then((bcrypt) => bcrypt.genSalt(6)).then(console.log);'" to genreate a salt
+BCRYPT_SALT=#
 
 # Run "openssl rand -base64 32" to genreate a secret
 BETTER_AUTH_SECRET=
@@ -33,12 +43,6 @@ BETTER_AUTH_URL=# http://<ec2-ip>
 HOOK_AUTH_TOKEN=
 HOOK_BASE_URL=# http://<ec2-ip>
 
-CODEX_API_KEY=#
-ANTHROPIC_BASE_URL=#
-ANTHROPIC_API_KEY=#
-ANTHROPIC_AUTH_TOKEN=#
-
-OPENAI_API_KEY=#
 ```
 
 

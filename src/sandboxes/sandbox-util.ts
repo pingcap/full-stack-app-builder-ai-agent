@@ -68,14 +68,15 @@ preferred_auth_method = "apikey"
 [projects."/vercel/sandbox"]
 trust_level = "trusted"
 
-[model_providers.crs]
-name = "crs"
+[model_providers.custom]
+name = "Custom Provider"
 model = "gpt-5.2"
 model_reasoning_effort = "medium"
-base_url = "https://cr-tokyo.breeswish.org/openai"
+base_url = ${JSON.stringify(process.env.CODEX_PROVIDER_BASE_URL!)}
 wire_api = "responses"
 requires_openai_auth = true
-env_key = "CRS_OAI_KEY"
+env_key = "CODEX_PROVIDER_API_KEY"
+env_key_instructions = "CODEX_PROVIDER_API_KEY is requred."
 '
 
 CODEX_AUTH_JSON='

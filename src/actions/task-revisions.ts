@@ -10,6 +10,7 @@ import { createSandbox } from "@/actions/vercel";
 import { getSessionUser } from "@/lib/auth";
 import db from "@/lib/db/db";
 import type { DB } from "@/lib/db/schema";
+import { extractEnvs } from "@/lib/envs";
 import { getErrorMessage } from "@/lib/errors";
 import { get, getAll, insert, update } from "@/lib/kysely-utils";
 import { getSiteSettings } from "@/lib/system-settings";
@@ -71,7 +72,7 @@ export async function createTaskRevision(params: CreateTaskRevisionParams) {
         {
           path: ".env.local",
           content: Buffer.from(
-            `DATABASE_URL=${branch.connection_url}\nOPENAI_API_KEY=${settings?.openai_api_key ?? ""}\n`,
+            `DATABASE_URL=${branch.connection_url}\nOPENAI_API_KEY=${process.env.OPENAI_API_KEY ?? ""}\n`,
             "utf-8",
           ),
         },
@@ -142,7 +143,7 @@ call_finish_hook
         ],
         detached: true,
         env: {
-          CRS_OAI_KEY: process.env.CRS_OAI_KEY!,
+          VERCEL_TOKEN: settings?.vercel_token!,
           SANDBOX_SESSION_ID: session,
           SANDBOX_ID: sandbox.sandboxId,
           HOOK_BASE_URL: (process.env.HOOK_BASE_URL ??
@@ -150,11 +151,9 @@ call_finish_hook
               ? `https://${process.env.VERCEL_URL}`
               : undefined))!,
           HOOK_AUTH_TOKEN: process.env.HOOK_AUTH_TOKEN!,
-          VERCEL_TOKEN: settings?.vercel_token!,
           BLOB_READ_WRITE_TOKEN: settings?.vercel_blob_storage_rw_token!,
           USER_ID: String(task?.user_id!),
-          ANTHROPIC_BASE_URL: "https://cr.breeswish.org/api",
-          ANTHROPIC_AUTH_TOKEN: process.env.CRS_OAI_KEY!,
+          ...extractEnvs(process.env, /^(ANTHROPIC|CODEX)_/),
         },
       });
 
@@ -361,7 +360,7 @@ export async function deployTask(
         },
         {
           key: "OPENAI_API_KEY",
-          value: settings?.openai_api_key ?? "",
+          value: process.env.OPENAI_API_KEY ?? "",
           customEnvironmentIds: [env.id],
           target: [],
           type: "encrypted",

@@ -17,7 +17,6 @@ export const siteSettingsSchema = z.object({
   vercel_blob_storage_id: z.string().optional(),
   vercel_blob_storage_rw_token: z.string().optional(),
   default_vercel_project_team_id: z.string().optional(),
-  openai_api_key: z.string().optional(),
 });
 
 export async function updateSiteSettings (settings: Partial<SiteSettings>) {
