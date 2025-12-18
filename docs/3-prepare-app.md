@@ -13,6 +13,7 @@ cd full-stack-app-builder-ai-agent
 
 # CAUTION: This operation will override the .env file if you already have one.
 node scripts/generate-env.js > .env
+cat .env
 ```
 
 Setup environment variables missed in .env file:
@@ -36,6 +37,13 @@ npm ci
 cd ../..
 
 npm run build
+```
+
+## Run migrations
+
+```shell
+npm run migrate:init
+npm run migrate:up-to-latest
 ```
 
 ## Start server

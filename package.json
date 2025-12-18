@@ -13,6 +13,7 @@
     "install-shadcn-components": "npx shadcn@latest add $(cat .shadcn-components)",
     "migrate:init": " node --env-file .env scripts/migrate.ts init",
     "migrate:up": " node --env-file .env scripts/migrate.ts up",
+    "migrate:up-to-latest": " node --env-file .env scripts/migrate.ts up-to-latest",
     "migrate:down": " node --env-file .env scripts/migrate.ts down"
   },
   "dependencies": {
