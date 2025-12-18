@@ -10,6 +10,9 @@ module.exports = {
       interpreter: "node",
       exec_mode: "cluster",
       kill_timeout: 60000000,
+      env: {
+        PORT: 3001
+      }
     },
     {
       name: "server",
@@ -17,6 +20,9 @@ module.exports = {
       script: "npm",
       args: "start",
       instances: 1,
+      env: {
+        PORT: 80
+      }
     },
   ],
 };
