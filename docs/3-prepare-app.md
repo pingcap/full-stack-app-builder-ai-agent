@@ -46,6 +46,12 @@ npm run migrate:init
 npm run migrate:up-to-latest
 ```
 
+## Create admin user
+
+```shell
+node scripts/create-admin-user.js
+```
+
 ## Start server
 
 ```shell

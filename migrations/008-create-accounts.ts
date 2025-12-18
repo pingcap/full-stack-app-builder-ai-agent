@@ -4,6 +4,8 @@ export async function up(db: Kysely<any>) {
   await db.transaction().execute(async (trx) => {
     const users = await trx.selectFrom("user").selectAll().execute();
 
+    if (users.length === 0) return;
+
     await trx
       .insertInto("account")
       .values(
