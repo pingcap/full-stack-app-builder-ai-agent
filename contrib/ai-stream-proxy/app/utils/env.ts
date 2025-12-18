@@ -13,6 +13,7 @@ const envSchema = z.object({
 
   // server
   PORT: z.coerce.number().int().max(65535).default(3001),
+  HOST: z.string().default("0.0.0.0"),
 
   REDIS_URL: z
     .url()

@@ -1,21 +1,21 @@
-import Koa from 'koa';
-import { scheduleGC } from './gc.ts';
-import { afterSupport } from './koa/after.ts';
-import { Logger, loggerSupport } from './koa/logger.ts';
-import { redisSupport } from './koa/redis.ts';
-import { requestId } from './koa/request-id.ts';
-import { auth } from './middlewares/auth.ts';
-import errorHandling from './middlewares/error-handling.ts';
-import { getFSStreamProvider } from './providers/fs.ts';
-import { getRedisStreamProvider } from './providers/redis.ts';
-import echoRouter from './routes/echo/route.ts';
-import streamsV2Router from './routes/v2/streams.ts';
-import env from './utils/env.ts';
-import { enableShutdownGracefully } from './utils/shutdown-gracefully.ts';
+import Koa from "koa";
+import { scheduleGC } from "./gc.ts";
+import { afterSupport } from "./koa/after.ts";
+import { Logger, loggerSupport } from "./koa/logger.ts";
+import { redisSupport } from "./koa/redis.ts";
+import { requestId } from "./koa/request-id.ts";
+import { auth } from "./middlewares/auth.ts";
+import errorHandling from "./middlewares/error-handling.ts";
+import { getFSStreamProvider } from "./providers/fs.ts";
+import { getRedisStreamProvider } from "./providers/redis.ts";
+import echoRouter from "./routes/echo/route.ts";
+import streamsV2Router from "./routes/v2/streams.ts";
+import env from "./utils/env.ts";
+import { enableShutdownGracefully } from "./utils/shutdown-gracefully.ts";
 
-export default function startApp () {
+export default function startApp() {
   const appLogger = new Logger({
-    tags: ['app'],
+    tags: ["app"],
   });
 
   const app = new Koa({
@@ -34,7 +34,7 @@ export default function startApp () {
 
   const fsProvider = getFSStreamProvider();
   app.use((context, next) => {
-    Object.defineProperty(context, 'streams', {
+    Object.defineProperty(context, "streams", {
       value: Object.freeze({
         fs: fsProvider,
         redis: getRedisStreamProvider(context as any),
@@ -49,11 +49,11 @@ export default function startApp () {
   app.use(echoRouter.routes());
   app.use(streamsV2Router.routes());
 
-  appLogger.log('info', 'listening', env.PORT);
+  appLogger.log("info", "listening", env.PORT);
 
-  const server = app.listen(env.PORT, () => {
-    process.send?.('ready');
-    appLogger.log('info', 'ready');
+  const server = app.listen(env.PORT, env.HOST, () => {
+    process.send?.("ready");
+    appLogger.log("info", `ready on http://${env.HOST}:${env.PORT}`);
   });
 
   server.setTimeout(0);
@@ -61,12 +61,12 @@ export default function startApp () {
   server.keepAliveTimeout = 0;
   server.requestTimeout = 0;
 
-  process.addListener('uncaughtException', (error, origin) => {
-    if ('context' in error && error.context === 'Socket closed.') {
+  process.addListener("uncaughtException", (error, origin) => {
+    if ("context" in error && error.context === "Socket closed.") {
       return;
     }
 
-    appLogger.log('error', 'uncaughtException', error);
+    appLogger.log("error", "uncaughtException", error);
     // process.exit(1);
   });
 
