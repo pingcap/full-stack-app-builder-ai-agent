@@ -44,13 +44,9 @@ npm run build
 ```shell
 npm run migrate:init
 npm run migrate:up-to-latest
+npm run seed:admin-user
 ```
 
-## Create admin user
-
-```shell
-node scripts/create-admin-user.js
-```
 
 ## Start server
 
